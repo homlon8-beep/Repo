@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: satyam-property-karnal
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: node --max-old-space-size=384 server.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: GROQ_API_KEY
+        sync: false
+      - key: APIFY_API_TOKEN
+        sync: false
+      - key: BRAND_NAME
+        value: Karnal Realty Advisors
+      - key: HELPLINE_NUMBER
+        value: "+91-9990394794"
+      - key: MAX_DEVICES
+        value: "6"
+      - key: DAILY_MAX_LEADS_PER_DEVICE
+        value: "50"
+      - key: MIN_MSG_DELAY_MS
+        value: "180000"
+      - key: MAX_MSG_DELAY_MS
+        value: "360000"
+      - key: MIN_BREAK_MINS
+        value: "35"
+      - key: MAX_BREAK_MINS
+        value: "65"
+      - key: WHATSAPP_ENGINE
+        value: "meta_cloud"
+      - key: META_ACCESS_TOKEN
+        sync: false
+      - key: META_PHONE_NUMBER_ID
+        sync: false
+      - key: META_WABA_ID
+        sync: false
+      - key: META_VERIFY_TOKEN
+        value: "satyam_karnal_webhook_2026"
+      - key: META_TEMPLATE_NAME
+        value: "karnal_property_lead_v1"
+      - key: META_TEMPLATE_LANG
+        value: "hi"
+      - key: DAILY_MAX_LEADS_CLOUD
+        value: "1000"

@@ -1,0 +1,23 @@
+{
+  "whatsappEngine": "meta_cloud",
+  "dailyMaxLeadsCloud": 1000,
+  "cloudPacingPreset": "cloud_turbo",
+  "cloudMinMsgDelayMs": 1500,
+  "cloudMaxMsgDelayMs": 3500,
+  "useMetaTemplate": true,
+  "dailyMaxLeadsPerDevice": 50,
+  "minMsgDelayMs": 35000,
+  "maxMsgDelayMs": 70000,
+  "minBreakMins": 5,
+  "maxBreakMins": 10,
+  "minBatchSize": 8,
+  "maxBatchSize": 12,
+  "businessHoursShield": false,
+  "adaptiveVelocityRamp": false,
+  "specialDeviceNumber": "9416085989",
+  "specialDailyLimit": 10,
+  "vaultCode": "3369",
+  "pacingPreset": "fast",
+  "sendBrandedImage": true,
+  "logoPath": "assets/karnal_reality_logo.jpg"
+}
