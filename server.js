@@ -921,7 +921,7 @@ app.get('/api/meta/status', async (req, res) => {
  */
 app.post('/api/meta/test-send', async (req, res) => {
   const targetPhone = req.body.phone;
-  const messageText = req.body.text || 'Namaste! Yeh Karnal Realty Advisors ka Official Meta Cloud API test message hai. (1,000+ msgs/day tier active)';
+  const messageText = req.body.text || 'Namaste! Yeh Karnal Realty Advisors ka Official Meta Cloud API test message hai. (2,000+ msgs/day tier active)';
   const useTemplate = req.body.useTemplate === 'true' || req.body.useTemplate === true;
 
   if (!targetPhone) {
@@ -963,10 +963,10 @@ app.post('/api/settings/engine', (req, res) => {
 });
 
 /**
- * Update 1k+ Cloud Daily Limit
+ * Update 2k+ Cloud Daily Limit
  */
 app.post('/api/settings/cloud-limit', (req, res) => {
-  const limit = parseInt(req.body.limit || '1000', 10);
+  const limit = parseInt(req.body.limit || '2000', 10);
   queue.saveBotConfig({ dailyMaxLeadsCloud: limit });
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
     return res.json({ success: true, dailyMaxLeadsCloud: limit });

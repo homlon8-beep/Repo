@@ -1,11 +1,11 @@
 /**
  * Official Meta WhatsApp Cloud API Provider for Karnal Realty Advisors
- * (Facebook Graph API v21.0 - Enterprise High-Volume 1,000+ Msgs/Day)
+ * (Facebook Graph API v21.0 - Enterprise High-Volume 2,000+ Msgs/Day)
  * 
  * Features:
  * - Official WhatsApp Business Platform direct integration
  * - Zero QR code dependency & zero phone ban risk
- * - Tier 1: 1,000+ unique business-initiated conversations/day (Scales to 10k, 100k, Unlimited)
+ * - 2,000+ unique business-initiated conversations/day (Scales to 10k, 100k, Unlimited)
  * - Template Message Dispatching (for cold lead outreach & marketing)
  * - 24-Hour Conversational Window auto-handling (Free-form text, interactive buttons, media)
  * - Interactive Button & Quick Reply menus (Plot sizes, SCO Commercial, Talk to Broker)
@@ -31,7 +31,7 @@ class MetaCloudWhatsApp {
     
     // Cloud Tier & Health Cache
     this.tierInfo = {
-      tier: 'TIER_1K (1,000 msgs/24h)',
+      tier: 'TIER_2K (2,000 msgs/24h)',
       qualityRating: 'UNKNOWN',
       nameStatus: 'UNKNOWN',
       displayPhoneNumber: '',
@@ -108,7 +108,7 @@ class MetaCloudWhatsApp {
       }
 
       this.tierInfo = {
-        tier: data.messaging_limit_tier || 'TIER_1K (1,000 msgs/24h)',
+        tier: data.messaging_limit_tier || 'TIER_2K (2,000 msgs/24h)',
         qualityRating: data.quality_rating || 'GREEN',
         nameStatus: data.name_status || 'APPROVED',
         displayPhoneNumber: data.display_phone_number || '',

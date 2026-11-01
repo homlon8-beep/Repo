@@ -43,4 +43,4 @@ services:
       - key: META_TEMPLATE_LANG
         value: "hi"
       - key: DAILY_MAX_LEADS_CLOUD
-        value: "1000"
+        value: "2000"

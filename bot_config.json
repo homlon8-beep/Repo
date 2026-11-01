@@ -1,6 +1,6 @@
 {
   "whatsappEngine": "meta_cloud",
-  "dailyMaxLeadsCloud": 1000,
+  "dailyMaxLeadsCloud": 2000,
   "cloudPacingPreset": "cloud_turbo",
   "cloudMinMsgDelayMs": 1500,
   "cloudMaxMsgDelayMs": 3500,

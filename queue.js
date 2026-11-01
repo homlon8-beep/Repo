@@ -26,7 +26,7 @@ const CONFIG_FILE = path.join(__dirname, 'bot_config.json');
 function loadBotConfig() {
   const defaults = {
     dailyMaxLeadsPerDevice: parseInt(process.env.DAILY_MAX_LEADS_PER_DEVICE || '50', 10),
-    dailyMaxLeadsCloud: parseInt(process.env.DAILY_MAX_LEADS_CLOUD || '1000', 10),
+    dailyMaxLeadsCloud: parseInt(process.env.DAILY_MAX_LEADS_CLOUD || '2000', 10),
     cloudMinMsgDelayMs: parseInt(process.env.CLOUD_MIN_MSG_DELAY_MS || '1500', 10),
     cloudMaxMsgDelayMs: parseInt(process.env.CLOUD_MAX_MSG_DELAY_MS || '3500', 10),
     cloudPacingPreset: 'cloud_turbo',
@@ -58,11 +58,11 @@ function loadBotConfig() {
 
 let botConfig = loadBotConfig();
 
-// Dedicated State for Official Meta WhatsApp Cloud API (1,000+ msgs/day)
+// Dedicated State for Official Meta WhatsApp Cloud API (2,000+ msgs/day)
 const metaCloudState = {
   dailySentCount: 0,
   totalSentSession: 0,
-  currentStatus: 'Ready for 1,000+ daily outreach',
+  currentStatus: 'Ready for 2,000+ daily outreach',
   consecutiveFailures: 0,
   nextActionTime: null,
   currentBatchCount: 0,
@@ -70,7 +70,7 @@ const metaCloudState = {
 };
 
 function getDailyMaxLeadsCloud() {
-  return botConfig.dailyMaxLeadsCloud || 1000;
+  return botConfig.dailyMaxLeadsCloud || 2000;
 }
 
 function saveBotConfig(updates) {
@@ -537,7 +537,7 @@ async function runDeviceWorker(deviceId) {
 }
 
 /**
- * Dedicated High-Throughput Dispatcher for Official Meta WhatsApp Cloud API (1,000+ msgs/day)
+ * Dedicated High-Throughput Dispatcher for Official Meta WhatsApp Cloud API (2,000+ msgs/day)
  */
 async function runMetaCloudWorker() {
   console.log(`🚀 [Meta Cloud Dispatcher Engine] Initialized (Daily Target: ${getDailyMaxLeadsCloud()} leads/day)...`);
@@ -559,9 +559,9 @@ async function runMetaCloudWorker() {
 
     const cloudLimit = getDailyMaxLeadsCloud();
 
-    // 1. Daily 1k Allocation Check
+    // 1. Daily 2k Allocation Check
     if (metaCloudState.dailySentCount >= cloudLimit) {
-      metaCloudState.currentStatus = `Daily 1k Cloud Allocation Completed (${metaCloudState.dailySentCount}/${cloudLimit}). Resuming at 9:00 AM IST...`;
+      metaCloudState.currentStatus = `Daily 2k Cloud Allocation Completed (${metaCloudState.dailySentCount}/${cloudLimit}). Resuming at 9:00 AM IST...`;
       metaCloudState.nextActionTime = getNext9AmIstTimestamp();
       await sleep(60000);
       continue;
@@ -663,7 +663,7 @@ function startQueue() {
   isPaused = false;
   console.log(`🚀 [Karnal Enterprise Cadence Engine] Starting dispatchers (Active Engine: ${whatsapp.getActiveEngine()})...`);
 
-  // 1. Start Official Meta Cloud High-Speed Dispatcher (1,000+ msgs/day)
+  // 1. Start Official Meta Cloud High-Speed Dispatcher (2,000+ msgs/day)
   runMetaCloudWorker().catch(err => {
     console.error('Fatal crash in Meta Cloud Worker:', err);
   });
@@ -717,7 +717,7 @@ function getQueueStatus() {
 
   const { hour, minute } = getIndianTimeParts();
   const connectedCount = whatsapp.getConnectedDevices ? whatsapp.getConnectedDevices().length : 0;
-  const queuedRemaining = scraper.getQueuedLeads ? scraper.getQueuedLeads(1000).length : 0;
+  const queuedRemaining = scraper.getQueuedLeads ? scraper.getQueuedLeads(2000).length : 0;
   const stats = scraper.getScraperStats ? scraper.getScraperStats() : {};
 
   return {
@@ -729,7 +729,7 @@ function getQueueStatus() {
       totalSentSession: metaCloudState.totalSentSession,
       nextActionTime: metaCloudState.nextActionTime ? formatIndiaTime(metaCloudState.nextActionTime) : null,
       configured: whatsapp.metaCloud.isConfigured(),
-      tier: whatsapp.metaCloud.tierInfo?.tier || 'TIER_1K (1,000 msgs/24h)'
+      tier: whatsapp.metaCloud.tierInfo?.tier || 'TIER_2K (2,000 msgs/24h)'
     },
     isRunning,
     isPaused,
