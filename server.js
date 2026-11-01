@@ -255,15 +255,20 @@ app.get('/qr', (req, res) => {
 });
 
 /**
- * Main Web Dashboard (/)
+ * MBG-Card Style Enterprise WhatsApp Real-Time CRM Dashboard (/)
  */
 app.get('/', (req, res) => {
-  const state = queue.getQueueState();
-  const scraperStats = scraper.getScraperStats();
+  const state = queue.getQueueState ? queue.getQueueState() : {};
+  const scraperStats = scraper.getScraperStats ? scraper.getScraperStats() : {};
   const totalShielded = scraper.getTotalShieldedCount ? scraper.getTotalShieldedCount() : 0;
-  const hotLeads = scraper.getHotRepliedLeads ? scraper.getHotRepliedLeads() : [];
-  const allLeads = scraper.getAllDiscoveredLeads ? scraper.getAllDiscoveredLeads('all') : [];
+  const metrics = chatMemory.getMetrics ? chatMemory.getMetrics() : { totalConversations: 0, repliedCount: 0, hotCount: 0, responseRate: '0.0%' };
+  const inquiries = chatMemory.getInquiries ? chatMemory.getInquiries() : [];
   const conversations = chatMemory.getAllConversations ? chatMemory.getAllConversations() : [];
+  const activeEngine = whatsapp.getActiveEngine ? whatsapp.getActiveEngine() : 'meta_cloud';
+  const isMetaCloud = activeEngine === 'meta_cloud';
+  const dailyTarget = state.dailyMaxLeads || 2000;
+  const currentSent = state.dailySentCount || 0;
+  const progressPct = Math.min(100, Math.round((currentSent / Math.max(1, dailyTarget)) * 100));
 
   res.send(`
     <!DOCTYPE html>
@@ -271,447 +276,916 @@ app.get('/', (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta http-equiv="refresh" content="8">
-      <title>Karnal Realty Advisors — Multi-Device Lead &amp; Outreach Engine</title>
+      <title>🏢 Satyam Realty CRM — Real-Time Meta WhatsApp Cloud Engine (2,000/Day)</title>
       <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: #070b14; color: #f1f5f9; padding: 1.5rem; }
-        .container { max-width: 900px; margin: 0 auto; }
-        header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 1.25rem; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        h1 { font-size: 1.45rem; color: #fbbf24; }
-        .status-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.9rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 700; text-decoration: none; }
-        .status-badge.online { background: #064e3b; color: #6ee7b7; border: 1px solid #059669; }
-        .status-badge.offline { background: #7f1d1d; color: #fca5a5; border: 1px solid #dc2626; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .stat-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 1.25rem; text-align: center; }
-        .stat-val { font-size: 1.7rem; font-weight: 800; color: #fbbf24; margin-top: 0.35rem; }
-        .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
-        .section-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem; }
-        h3 { font-size: 1.1rem; margin-bottom: 1rem; color: #f8fafc; }
-        .btn-group { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-        .btn { padding: 0.65rem 1.25rem; border-radius: 8px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; font-size: 0.9rem; }
-        .btn-gold { background: #f59e0b; color: #000; font-weight: 700; }
-        .btn-emerald { background: #10b981; color: #fff; font-weight: 700; }
-        .btn-blue { background: #2563eb; color: #fff; }
-        .btn-outline { background: transparent; border: 1px solid #334155; color: #cbd5e1; }
-        textarea { width: 100%; height: 90px; background: #070b14; border: 1px solid #334155; border-radius: 8px; color: #fff; padding: 0.75rem; font-size: 0.9rem; margin-bottom: 0.75rem; resize: vertical; }
-        .log-box { background: #070b14; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; }
-        .device-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #070b14; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid #1e293b; flex-wrap: wrap; gap: 0.5rem; }
-        .device-title { font-weight: 700; color: #f8fafc; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
-        .device-meta { font-size: 0.8rem; color: #94a3b8; }
-        .badge-pill { padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
-        .badge-online { background: #064e3b; color: #6ee7b7; border: 1px solid #059669; }
-        .badge-offline { background: #334155; color: #94a3b8; }
+        :root {
+          --bg-dark: #070b12;
+          --panel-bg: #0d1524;
+          --panel-border: #1a273e;
+          --wa-green: #25D366;
+          --wa-dark-green: #005c4b;
+          --wa-bubble-in: #1f2c34;
+          --wa-chat-bg: #0b141a;
+          --gold: #f59e0b;
+          --gold-glow: #fbbf24;
+          --text-main: #f1f5f9;
+          --text-muted: #94a3b8;
+          --accent-blue: #38bdf8;
+          --card-radius: 12px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; }
+        body { background: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 1.25rem; font-size: 14px; }
+        .app-container { max-width: 1380px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.25rem; }
+
+        /* Top Navigation Header */
+        header.top-bar {
+          background: var(--panel-bg);
+          border: 1px solid var(--panel-border);
+          border-radius: var(--card-radius);
+          padding: 1rem 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+        .brand-zone { display: flex; align-items: center; gap: 1rem; }
+        .brand-logo { width: 50px; height: 50px; border-radius: 10px; border: 2px solid var(--gold); object-fit: cover; }
+        .brand-text h1 { font-size: 1.25rem; color: var(--gold-glow); font-weight: 800; letter-spacing: -0.02em; }
+        .brand-text p { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem; }
+        .header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+        .engine-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.45rem 1rem;
+          border-radius: 9999px;
+          font-size: 0.82rem;
+          font-weight: 700;
+          background: rgba(37, 211, 102, 0.12);
+          color: #4ade80;
+          border: 1px solid rgba(74, 222, 128, 0.35);
+        }
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 10px #4ade80; animation: pulse 1.6s infinite; }
+        @keyframes pulse { 0% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.4; transform: scale(0.9); } }
+
+        /* Telemetry Cards Grid */
+        .metrics-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 1rem;
+        }
+        .metric-card {
+          background: var(--panel-bg);
+          border: 1px solid var(--panel-border);
+          border-radius: var(--card-radius);
+          padding: 1.2rem;
+          position: relative;
+          overflow: hidden;
+        }
+        .metric-card::after {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0; height: 3px;
+          background: linear-gradient(90deg, var(--gold), var(--wa-green));
+        }
+        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; display: flex; justify-content: space-between; align-items: center; }
+        .metric-val { font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0.4rem 0 0.3rem 0; font-family: monospace; }
+        .metric-sub { font-size: 0.78rem; color: var(--text-muted); }
+
+        .progress-bar-container { width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-top: 0.6rem; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #10b981, #f59e0b); border-radius: 4px; transition: width 0.4s ease; }
+
+        /* Real-Time Live Activity Feed */
+        .ticker-section {
+          background: #090e18;
+          border: 1px solid var(--panel-border);
+          border-radius: var(--card-radius);
+          padding: 0.85rem 1.25rem;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          overflow: hidden;
+        }
+        .ticker-badge {
+          background: #ef4444;
+          color: #fff;
+          font-weight: 800;
+          font-size: 0.72rem;
+          padding: 0.25rem 0.6rem;
+          border-radius: 6px;
+          text-transform: uppercase;
+          white-space: nowrap;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+        }
+        .ticker-items {
+          display: flex;
+          gap: 1.5rem;
+          overflow-x: auto;
+          white-space: nowrap;
+          scrollbar-width: none;
+          font-size: 0.82rem;
+          color: #cbd5e1;
+        }
+        .ticker-items::-webkit-scrollbar { display: none; }
+        .ticker-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          background: var(--panel-bg);
+          padding: 0.3rem 0.75rem;
+          border-radius: 9999px;
+          border: 1px solid var(--panel-border);
+        }
+
+        /* MBG Card Live WhatsApp CRM Console */
+        .crm-console {
+          display: grid;
+          grid-template-columns: 380px 1fr;
+          gap: 1.25rem;
+          min-height: 650px;
+        }
+        @media (max-width: 960px) {
+          .crm-console { grid-template-columns: 1fr; }
+        }
+
+        /* Left Column: Real-Time Lead Inbox */
+        .crm-sidebar {
+          background: var(--panel-bg);
+          border: 1px solid var(--panel-border);
+          border-radius: var(--card-radius);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .sidebar-header {
+          padding: 1rem;
+          border-bottom: 1px solid var(--panel-border);
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+        .sidebar-title { display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-title h2 { font-size: 1rem; color: #fff; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .search-box input {
+          width: 100%;
+          background: var(--bg-dark);
+          border: 1px solid var(--panel-border);
+          border-radius: 8px;
+          padding: 0.55rem 0.85rem;
+          color: #fff;
+          font-size: 0.85rem;
+          outline: none;
+        }
+        .search-box input:focus { border-color: var(--wa-green); }
+
+        .filter-tabs { display: flex; gap: 0.4rem; overflow-x: auto; scrollbar-width: none; }
+        .tab-btn {
+          background: transparent;
+          border: 1px solid var(--panel-border);
+          color: var(--text-muted);
+          padding: 0.3rem 0.75rem;
+          border-radius: 9999px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .tab-btn.active {
+          background: rgba(245, 158, 11, 0.15);
+          color: var(--gold-glow);
+          border-color: var(--gold);
+        }
+
+        .contacts-list {
+          flex: 1;
+          overflow-y: auto;
+          max-height: 520px;
+        }
+        .contact-item {
+          display: flex;
+          align-items: center;
+          gap: 0.85rem;
+          padding: 0.85rem 1rem;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .contact-item:hover { background: rgba(255, 255, 255, 0.03); }
+        .contact-item.selected { background: rgba(37, 211, 102, 0.08); border-left: 3px solid var(--wa-green); }
+        .contact-avatar {
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          background: #1e293b;
+          color: var(--gold-glow);
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          flex-shrink: 0;
+          border: 1px solid var(--panel-border);
+        }
+        .contact-info { flex: 1; min-width: 0; }
+        .contact-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem; }
+        .contact-name { font-weight: 700; color: #fff; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .contact-time { font-size: 0.7rem; color: var(--text-muted); }
+        .contact-preview { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .badge-hot { background: #dc2626; color: #fff; font-size: 0.68rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 4px; }
+        .badge-outreach { background: #334155; color: #cbd5e1; font-size: 0.68rem; padding: 0.15rem 0.45rem; border-radius: 4px; }
+
+        /* Right Column: Live WhatsApp Web Viewer */
+        .crm-chat {
+          background: var(--wa-chat-bg);
+          border: 1px solid var(--panel-border);
+          border-radius: var(--card-radius);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          position: relative;
+        }
+        .chat-header {
+          background: var(--panel-bg);
+          padding: 0.9rem 1.25rem;
+          border-bottom: 1px solid var(--panel-border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+        .chat-header-user { display: flex; align-items: center; gap: 0.85rem; }
+        .chat-header-name { font-weight: 700; color: #fff; font-size: 0.95rem; }
+        .chat-header-meta { font-size: 0.78rem; color: var(--text-muted); }
+        .chat-header-actions { display: flex; gap: 0.5rem; }
+
+        .chat-window {
+          flex: 1;
+          padding: 1.25rem;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          background-color: var(--wa-chat-bg);
+          background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 0);
+          background-size: 24px 24px;
+          min-height: 420px;
+          max-height: 520px;
+        }
+        .chat-bubble {
+          max-width: 75%;
+          padding: 0.65rem 0.95rem;
+          border-radius: 8px;
+          font-size: 0.88rem;
+          line-height: 1.45;
+          position: relative;
+          word-break: break-word;
+        }
+        .chat-bubble.inbound {
+          align-self: flex-start;
+          background: var(--wa-bubble-in);
+          color: #f1f5f9;
+          border-bottom-left-radius: 2px;
+          border: 1px solid rgba(255,255,255,0.06);
+        }
+        .chat-bubble.outbound {
+          align-self: flex-end;
+          background: var(--wa-dark-green);
+          color: #fff;
+          border-bottom-right-radius: 2px;
+        }
+        .bubble-meta {
+          font-size: 0.68rem;
+          margin-top: 0.35rem;
+          text-align: right;
+          color: rgba(255, 255, 255, 0.6);
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          gap: 0.3rem;
+        }
+        .bubble-tag { font-size: 0.68rem; opacity: 0.75; font-style: italic; margin-bottom: 0.2rem; }
+
+        .chat-footer {
+          background: var(--panel-bg);
+          padding: 0.85rem 1rem;
+          border-top: 1px solid var(--panel-border);
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+        .quick-chips { display: flex; gap: 0.4rem; overflow-x: auto; scrollbar-width: none; }
+        .chip-btn {
+          background: #1e293b;
+          border: 1px solid #334155;
+          color: #cbd5e1;
+          font-size: 0.72rem;
+          padding: 0.25rem 0.65rem;
+          border-radius: 6px;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .chip-btn:hover { background: #334155; color: #fff; }
+
+        .chat-input-bar { display: flex; gap: 0.5rem; }
+        .chat-input-bar input {
+          flex: 1;
+          background: var(--bg-dark);
+          border: 1px solid var(--panel-border);
+          border-radius: 8px;
+          padding: 0.65rem 0.95rem;
+          color: #fff;
+          font-size: 0.88rem;
+          outline: none;
+        }
+        .chat-input-bar input:focus { border-color: var(--wa-green); }
+
+        .btn {
+          padding: 0.6rem 1.1rem;
+          border-radius: 8px;
+          font-weight: 700;
+          border: none;
+          cursor: pointer;
+          font-size: 0.85rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          text-decoration: none;
+        }
+        .btn-wa { background: #25D366; color: #000; }
+        .btn-gold { background: #f59e0b; color: #000; }
+        .btn-danger { background: #dc2626; color: #fff; }
+        .btn-outline { background: transparent; border: 1px solid var(--panel-border); color: #cbd5e1; }
+        .btn-outline:hover { background: #1e293b; color: #fff; }
+
+        /* Lower Controls Section */
+        .controls-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 1.25rem;
+        }
+        .control-card {
+          background: var(--panel-bg);
+          border: 1px solid var(--panel-border);
+          border-radius: var(--card-radius);
+          padding: 1.25rem;
+        }
+        .control-title { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; }
+        textarea.shield-input {
+          width: 100%;
+          height: 80px;
+          background: var(--bg-dark);
+          border: 1px solid var(--panel-border);
+          border-radius: 8px;
+          color: #fff;
+          padding: 0.75rem;
+          font-size: 0.82rem;
+          resize: vertical;
+          outline: none;
+        }
       </style>
     </head>
     <body>
-      <div class="container">
-        <header>
-          <div>
-            <h1>🏢 Karnal Realty Advisors — Multi-Device Lead Engine</h1>
-            <p style="color: #64748b; font-size: 0.85rem; margin-top: 0.2rem;">
-              GT Road Commercial Spaces • SCO Plots • NRI Diaspora (Canada, UK, US, Aus, Dubai) • Enterprise Delivery Cadence &amp; Account Health Matrix
-            </p>
+      <div class="app-container">
+        <!-- Top Navigation Header -->
+        <header class="top-bar">
+          <div class="brand-zone">
+            <img src="/assets/karnal_reality_logo.jpg" alt="Logo" class="brand-logo" onerror="this.style.display='none'" />
+            <div class="brand-text">
+              <h1>🏢 SATYAM REALTY — ENTERPRISE WHATSAPP CRM</h1>
+              <p>Official Meta WhatsApp Cloud API v21.0 • 2,000 Verified Conversations/Day • Real-Time Lead Matrix</p>
+            </div>
           </div>
-          <div>
-            ${state.connectedDevicesCount > 0 ?
-              `<a href="/qr" class="status-badge online">● ${state.connectedDevicesCount} / ${state.maxDevices} Devices Active</a>` :
-              `<a href="/qr" class="status-badge offline">⚠️ Scan Devices QR</a>`
-            }
+          <div class="header-actions">
+            <span class="engine-pill">
+              <span class="pulse-dot"></span>
+              ${isMetaCloud ? 'Meta Cloud API v21.0 Active (2,000/Day)' : 'Baileys Multi-Device Active'}
+            </span>
+            <form method="POST" action="/api/settings/engine" style="margin:0;">
+              <input type="hidden" name="engine" value="${isMetaCloud ? 'baileys' : 'meta_cloud'}">
+              <button type="submit" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.45rem 0.85rem;">
+                ⇄ Switch to ${isMetaCloud ? 'Baileys QR' : 'Meta Cloud'}
+              </button>
+            </form>
+            <form method="POST" action="${state.isPaused ? '/api/queue/resume' : '/api/queue/pause'}" style="margin:0;">
+              <button type="submit" class="btn ${state.isPaused ? 'btn-wa' : 'btn-danger'}" style="font-size: 0.78rem; padding: 0.45rem 0.95rem;">
+                ${state.isPaused ? '▶️ Resume Dispatch' : '⏸️ Pause Dispatch'}
+              </button>
+            </form>
           </div>
         </header>
 
-        <div class="grid">
-          <div class="stat-card">
-            <div class="stat-label">Active Devices</div>
-            <div class="stat-val" style="color: #fbbf24;">${state.connectedDevicesCount} / ${state.maxDevices}</div>
+        <!-- Telemetry Metrics Grid (MBG Card Layout) -->
+        <div class="metrics-grid">
+          <!-- Card 1: 2k Daily Cloud Target -->
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Today's Outreach</span>
+              <span style="color: var(--gold); font-size: 0.7rem; font-weight: 800;">2,000 / DAY TIER</span>
+            </div>
+            <div class="metric-val" id="valDailySent" style="color: var(--wa-green);">${currentSent} <span style="font-size: 1rem; color: var(--text-muted);">/ ${dailyTarget}</span></div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" id="barDailyFill" style="width: ${progressPct}%;"></div>
+            </div>
+            <div class="metric-sub" style="margin-top: 0.4rem; display: flex; justify-content: space-between;">
+              <span id="lblProgressPct">${progressPct}% Dispatched</span>
+              <span style="color: #38bdf8;">Cloud Turbo (1.5s–3.5s)</span>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Today's Outreach</div>
-            <div class="stat-val" style="color: #34d399;">${state.dailySentCount} / ${state.dailyMaxLeads}</div>
+
+          <!-- Card 2: Hot Inquiries / Replies -->
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Hot Inquiries &amp; Replies</span>
+              <span style="background: rgba(220, 38, 38, 0.2); color: #f87171; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.68rem;">🔥 LIVE</span>
+            </div>
+            <div class="metric-val" id="valHotInquiries" style="color: var(--gold-glow);">${metrics.repliedCount || 0}</div>
+            <div class="metric-sub">
+              Response Rate: <strong style="color: #4ade80;" id="valResponseRate">${metrics.responseRate || '0.0%'}</strong> • Multi-Turn Active
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Total Sent (All Time)</div>
-            <div class="stat-val">${state.totalSentDb}</div>
+
+          <!-- Card 3: Queued Leads in Database -->
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Discovered Leads In DB</span>
+              <span style="color: #38bdf8; font-size: 0.7rem;">HARVESTER</span>
+            </div>
+            <div class="metric-val" id="valQueuedLeads" style="color: var(--accent-blue);">${state.queuedRemaining || 0}</div>
+            <div class="metric-sub">
+              Commercial SCOs, Shops &amp; NRI Diaspora
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Leads In Queue</div>
-            <div class="stat-val" style="color: #38bdf8;">${state.queuedRemaining}</div>
+
+          <!-- Card 4: Total Memory Threads (100% Isolated) -->
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Isolated Memory Threads</span>
+              <span style="color: #a855f7; font-size: 0.7rem;">E2EE ISOLATED</span>
+            </div>
+            <div class="metric-val" id="valConversations" style="color: #c084fc;">${metrics.totalConversations || conversations.length}</div>
+            <div class="metric-sub">
+              Strict Phone Separation: 100% Zero Leak
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Shielded Past Numbers</div>
-            <div class="stat-val" style="color: #a855f7;">${totalShielded}</div>
-          </div>
-          <div class="stat-card" style="border-color: #f59e0b44;">
-            <div class="stat-label" style="color: #fde68a;">Hot Replied Leads</div>
-            <div class="stat-val" style="color: #f59e0b;">${hotLeads.length}</div>
+
+          <!-- Card 5: Lifetime Dispatched -->
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>All-Time Outreach</span>
+              <span style="color: var(--text-muted); font-size: 0.7rem;">DATABASE</span>
+            </div>
+            <div class="metric-val" id="valTotalSent" style="color: #cbd5e1;">${state.totalSentDb || metrics.totalOutreachSent || 0}</div>
+            <div class="metric-sub">
+              Shielded Past Leads: <strong style="color: #f59e0b;">${totalShielded}</strong>
+            </div>
           </div>
         </div>
 
-        ${req.query.shielded ? `
-          <div style="background: #1e1b4b; border: 1px solid #8b5cf6; border-radius: 12px; padding: 1.1rem; margin-bottom: 1.5rem; color: #e9d5ff;">
-            🛡️ <strong>Investor Shield Updated!</strong> Permanently shielded <strong>${req.query.count || 0}</strong> numbers from ever receiving outreach again.
-          </div>
-        ` : ''}
-
-        ${req.query.settings_saved ? `
-          <div style="background: #064e3b; border: 1px solid #10b981; border-radius: 12px; padding: 1.1rem; margin-bottom: 1.5rem; color: #a7f3d0; font-weight: 600;">
-            ✅ <strong>Outreach Settings Updated!</strong> 24-hour limit set to <strong>${req.query.limit || state.dailyMaxPerDevice}</strong> msgs/device (Preset: ${req.query.pacing || state.botConfig?.pacingPreset || 'custom'}). All workers updated immediately.
-          </div>
-        ` : ''}
-
-        <!-- Branded Logo AI Dispatch Card -->
-        <div class="section-box" style="border-left: 4px solid #fbbf24; background: #0f172a; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-          <div style="display: flex; align-items: center; gap: 1.25rem;">
-            <img src="/assets/karnal_reality_logo.jpg" alt="Karnal Reality Logo" style="width: 72px; height: 72px; border-radius: 12px; object-fit: cover; border: 2px solid #f59e0b; box-shadow: 0 4px 14px rgba(0,0,0,0.5);" />
-            <div>
-              <h3 style="margin: 0; color: #fbbf24; font-size: 1.05rem;">🏢 Karnal Reality Branded Picture Outreach Engine: ACTIVE</h3>
-              <p style="color: #cbd5e1; font-size: 0.85rem; margin-top: 0.25rem;">
-                Every outbound WhatsApp message and AI consultation reply is dynamically sent with the high-resolution <strong>Karnal Reality</strong> luxury real estate logo and cryptographic zero-width watermarked caption.
-              </p>
-            </div>
-          </div>
-          <div>
-            <span style="background: #064e3b; color: #6ee7b7; border: 1px solid #059669; padding: 0.4rem 0.95rem; border-radius: 9999px; font-size: 0.82rem; font-weight: 700;">
-              📸 Branded Image Dispatch ON
-            </span>
+        <!-- Real-Time Activity Feed Ticker -->
+        <div class="ticker-section">
+          <div class="ticker-badge">⚡ LIVE STREAM</div>
+          <div class="ticker-items" id="tickerItems">
+            <div class="ticker-pill">⏳ Initializing real-time telemetry stream...</div>
           </div>
         </div>
 
-        <!-- Customizable 24-Hour Outreach Volume & Speed Controller -->
-        <div class="section-box" style="border-left: 4px solid #10b981; background: #064e3b12;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div>
-              <h3 style="margin: 0; color: #34d399;">⚡ Outreach Speed &amp; Volume Controller</h3>
-              <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.2rem;">
-                Adjust dispatch speed, message delays, and 24-hour targets. Takes effect immediately on all connected devices.
-              </p>
-            </div>
-            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-              <span style="background: #065f46; color: #a7f3d0; font-size: 0.8rem; padding: 0.35rem 0.85rem; border-radius: 9999px; font-weight: 700;">
-                Target: ${state.dailyMaxPerDevice || 50} msgs/device/24h
-              </span>
-              <span style="background: #312e81; color: #c7d2fe; font-size: 0.8rem; padding: 0.35rem 0.85rem; border-radius: 9999px; font-weight: 700;">
-                Speed: ${((state.botConfig && state.botConfig.minMsgDelayMs ? state.botConfig.minMsgDelayMs : 35000) / 1000).toFixed(0)}s - ${((state.botConfig && state.botConfig.maxMsgDelayMs ? state.botConfig.maxMsgDelayMs : 70000) / 1000).toFixed(0)}s
-              </span>
-            </div>
-          </div>
-
-          <!-- Speed Presets -->
-          <div style="margin-top: 1rem; background: #070b14; border: 1px solid #1e293b; border-radius: 10px; padding: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <span style="font-size: 0.85rem; color: #f1f5f9; font-weight: 700;">⚡ Dispatch Speed Presets:</span>
-              <form method="POST" action="/api/settings/toggle-timezone-shield" style="margin: 0;">
-                <button type="submit" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.3rem 0.75rem; border-color: ${state.botConfig && state.botConfig.businessHoursShield ? '#f59e0b' : '#10b981'}; color: ${state.botConfig && state.botConfig.businessHoursShield ? '#fbbf24' : '#34d399'};">
-                  ${state.botConfig && state.botConfig.businessHoursShield ? '🌙 Daytime Guard: ON (Click for 24/7 Any-Time)' : '🟢 24/7 Any-Time Dispatch: ACTIVE (Zero Delay)'}
-                </button>
-              </form>
-            </div>
-
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              <form method="POST" action="/api/settings/pacing" style="margin: 0;">
-                <input type="hidden" name="preset" value="turbo">
-                <input type="hidden" name="dailyMaxLeads" value="${state.dailyMaxPerDevice || 50}">
-                <button type="submit" class="btn btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; ${state.botConfig && state.botConfig.pacingPreset === 'turbo' ? 'border-color: #ec4899; color: #f472b6; background: #83184322;' : ''}">
-                  🚀 Turbo (25s - 45s • 10 msgs in ~5m)
-                </button>
-              </form>
-
-              <form method="POST" action="/api/settings/pacing" style="margin: 0;">
-                <input type="hidden" name="preset" value="fast">
-                <input type="hidden" name="dailyMaxLeads" value="${state.dailyMaxPerDevice || 50}">
-                <button type="submit" class="btn btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; ${!state.botConfig || state.botConfig.pacingPreset === 'fast' ? 'border-color: #10b981; color: #34d399; background: #064e3b33;' : ''}">
-                  ⚡ Fast Human (35s - 70s • 10 msgs in ~8m)
-                </button>
-              </form>
-
-              <form method="POST" action="/api/settings/pacing" style="margin: 0;">
-                <input type="hidden" name="preset" value="balanced">
-                <input type="hidden" name="dailyMaxLeads" value="${state.dailyMaxPerDevice || 50}">
-                <button type="submit" class="btn btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; ${state.botConfig && state.botConfig.pacingPreset === 'balanced' ? 'border-color: #818cf8; color: #a5b4fc; background: #312e8133;' : ''}">
-                  ⚖️ Balanced (1m - 2m • 10 msgs in ~15m)
-                </button>
-              </form>
-
-              <form method="POST" action="/api/settings/pacing" style="margin: 0;">
-                <input type="hidden" name="preset" value="enterprise">
-                <input type="hidden" name="dailyMaxLeads" value="${state.dailyMaxPerDevice || 50}">
-                <button type="submit" class="btn btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; ${state.botConfig && state.botConfig.pacingPreset === 'enterprise' ? 'border-color: #64748b; color: #cbd5e1; background: #1e293b;' : ''}">
-                  🛡️ Deep Enterprise (3m - 6m)
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <!-- Volume Cap Form -->
-          <form method="POST" action="/api/settings/daily-limit" style="margin-top: 1rem;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-              <label style="font-size: 0.85rem; color: #cbd5e1; font-weight: 600;">Custom 24-Hour Limit (per device):</label>
-              <input type="number" name="dailyMaxLeads" min="5" max="500" value="${state.dailyMaxPerDevice || 50}" style="width: 100px; background: #070b14; border: 1px solid #10b981; border-radius: 8px; color: #fff; padding: 0.45rem 0.75rem; font-size: 0.95rem; font-weight: 700; text-align: center;" required />
-              <button type="submit" class="btn btn-emerald" style="padding: 0.45rem 1.1rem; font-size: 0.85rem;">💾 Save Limit</button>
-            </div>
-
-            <div style="margin-top: 0.85rem; font-size: 0.8rem; color: #94a3b8; background: #070b14; padding: 0.75rem 0.9rem; border-radius: 8px; border: 1px solid #1e293b;">
-              <div>
-                📊 <strong>Total 24-Hour Capacity:</strong> 
-                <span style="color: #34d399; font-weight: 700;">${(state.dailyMaxPerDevice || 50) * Math.max(1, state.connectedDevicesCount)} msgs/day</span> across active devices 
-                (Up to <span style="color: #fbbf24; font-weight: 700;">${(state.dailyMaxPerDevice || 50) * state.maxDevices} msgs/day</span> with all 6 devices linked).
+        <!-- The MBG Card Virtual WhatsApp Live Console -->
+        <div class="crm-console">
+          <!-- Left Column: Lead Inbox -->
+          <div class="crm-sidebar">
+            <div class="sidebar-header">
+              <div class="sidebar-title">
+                <h2>💬 Lead Inbox &amp; Inquiries</h2>
+                <span style="font-size: 0.75rem; color: var(--gold); font-weight: 700;" id="inboxCounter">${conversations.length} Contacts</span>
               </div>
-              <div style="margin-top: 0.4rem; color: #c4b5fd; font-size: 0.78rem;">
-                🔒 <strong>Device Rule:</strong> Number <strong>+91-9416085989</strong> is strictly capped at <strong>10 messages/day</strong> and all sent chats are automatically archived &amp; muted (Secret Vault Code: <strong>3369</strong>). All other numbers send your custom volume (${state.dailyMaxPerDevice || 50}/day).
+              <div class="search-box">
+                <input type="text" id="contactSearch" placeholder="🔍 Search phone, name or inquiry..." oninput="filterContacts()" />
+              </div>
+              <div class="filter-tabs">
+                <button class="tab-btn active" data-filter="all" onclick="setFilter('all', this)">All Leads</button>
+                <button class="tab-btn" data-filter="inquiries" onclick="setFilter('inquiries', this)">🔥 Inquiries</button>
+                <button class="tab-btn" data-filter="sent" onclick="setFilter('sent', this)">📤 Sent</button>
+                <button class="tab-btn" data-filter="nri" onclick="setFilter('nri', this)">🌍 NRI Investors</button>
               </div>
             </div>
-          </form>
-        </div>
 
-        <!-- Multi-Device Control Center (6 Slots) -->
-        <div class="section-box" style="border-left: 4px solid #f59e0b;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div>
-              <h3 style="margin: 0; color: #fbbf24;">📱 Multi-Device Territory Matrix (${state.connectedDevicesCount} of ${state.maxDevices} Linked)</h3>
-              <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.2rem;">
-                Isolated sessions: 50 leads/day, 1–2m jitter, 50–80m tea breaks. Partitioned by territory: Commercial, SCOs, Canada, UK, Australia &amp; Haryana HNW.
-              </p>
+            <!-- Scrollable Contacts List -->
+            <div class="contacts-list" id="contactsContainer">
+              <!-- Rendered via JS -->
             </div>
-            <a href="/qr" class="btn btn-gold" style="font-size: 0.85rem;">+ Link / Manage Devices</a>
           </div>
 
-          <div>
-            ${state.devices.map(d => {
-              const isSpecial = d.phone && String(d.phone).includes('9416085989');
-              return `
-              <div class="device-row">
+          <!-- Right Column: Live WhatsApp Web Viewer -->
+          <div class="crm-chat">
+            <div class="chat-header">
+              <div class="chat-header-user">
+                <div class="contact-avatar" id="activeAvatar" style="background: #0f766e; color: #fff;">WA</div>
                 <div>
-                  <div class="device-title">
-                    <span>Device ${d.id}</span>
-                    <span class="badge-pill ${d.isConnected ? 'badge-online' : 'badge-offline'}">
-                      ${d.isConnected ? `● +${d.phone}` : 'Not Linked'}
-                    </span>
-                    ${isSpecial ? '<span style="background: #4c1d95; color: #c4b5fd; font-size: 0.7rem; padding: 0.15rem 0.55rem; border-radius: 9999px; font-weight: 700; margin-left: 0.4rem;">🔒 Locked (10/day • Vault 3369)</span>' : ''}
-                  </div>
-                  <div class="device-meta" style="margin-top: 0.35rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                    <span>Status: <strong style="color: #e2e8f0;">${d.currentStatus}</strong></span>
-                    ${d.nextActionTimestamp ? `
-                      <span style="background: #064e3b; border: 1px solid #059669; padding: 0.15rem 0.65rem; border-radius: 6px; color: #a7f3d0; font-size: 0.82rem; font-weight: 700;">
-                        ⏳ Next Msg: <span class="countdown-timer" data-target="${d.nextActionTimestamp}" title="at ${d.nextActionTime}" style="color: #34d399;">${d.nextActionTime}</span>
-                      </span>
-                    ` : (d.isConnected ? `
-                      <span style="background: #064e3b; border: 1px solid #059669; padding: 0.15rem 0.65rem; border-radius: 6px; color: #a7f3d0; font-size: 0.82rem; font-weight: 700;">
-                        ⏳ Next Msg: <span style="color: #34d399;">🟢 Ready to dispatch</span>
-                      </span>
-                    ` : '')}
-                  </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                  <span style="font-weight: 700; color: ${d.dailySentCount >= d.dailyMaxLeads ? '#34d399' : '#fbbf24'}; font-size: 0.9rem;">
-                    ${d.dailySentCount} / ${d.dailyMaxLeads} today
-                  </span>
-                  <a href="/qr?device=${d.id}" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
-                    ${d.isConnected ? 'Manage' : '📱 Scan QR'}
-                  </a>
+                  <div class="chat-header-name" id="activeName">Select a lead from the inbox</div>
+                  <div class="chat-header-meta" id="activeMeta">+91 • Click any contact on the left to inspect conversation</div>
                 </div>
               </div>
-            `;
-            }).join('')}
+              <div class="chat-header-actions" id="chatHeaderActions" style="display:none;">
+                <a id="btnOpenWa" href="#" target="_blank" class="btn btn-wa" style="font-size: 0.78rem; padding: 0.4rem 0.85rem;">
+                  🟢 Open in WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <!-- WhatsApp Message Bubbles Window -->
+            <div class="chat-window" id="chatWindow">
+              <div style="text-align: center; color: var(--text-muted); margin: auto; padding: 2rem;">
+                <p style="font-size: 1.1rem; color: var(--gold-glow); font-weight: 700; margin-bottom: 0.5rem;">📱 Real-Time WhatsApp Console</p>
+                <p style="font-size: 0.85rem;">Select any of the 2,000+ daily outreach leads or hot inquiries on the left to see the complete message thread, delivery receipts, and AI responses live!</p>
+              </div>
+            </div>
+
+            <!-- Chat Footer (Input & Quick Chips) -->
+            <div class="chat-footer">
+              <div class="quick-chips">
+                <button class="chip-btn" onclick="sendQuickChip('Namaste! Karnal Sector 12 SCO plots brochure aur pricing right here share kar raha hoon.')">🏢 Sector 12 SCO Brochure</button>
+                <button class="chip-btn" onclick="sendQuickChip('Namaste ji! Weekend par direct site visit schedule kar sakte hain. Aap Saturday comfortable rahenge ya Sunday?')">📅 Book Weekend Site Visit</button>
+                <button class="chip-btn" onclick="sendQuickChip('GT Road Expressway commercial plots ki latest price sheet aur RERA approvals available hain.')">📍 GT Road Pricing Sheet</button>
+                <button class="chip-btn" onclick="sendQuickChip('Main senior property advisor Aman Sharma se direct callback arrange karwa deta hoon.')">📞 Request Senior Broker Call</button>
+              </div>
+              <form class="chat-input-bar" onsubmit="event.preventDefault(); sendCustomMessage();">
+                <input type="text" id="manualMsgInput" placeholder="Type a message to this lead via Meta Cloud API..." disabled />
+                <button type="submit" id="btnSendManual" class="btn btn-wa" disabled>Send ⚡</button>
+              </form>
+            </div>
           </div>
         </div>
 
-        <!-- Master Pause / Stop Bot Controls -->
-        ${state.isPaused ? `
-          <div style="background: #450a0a; border: 1px solid #b91c1c; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-            <div>
-              <h3 style="color: #f87171; margin-bottom: 0.25rem;">🛑 Outreach Engine is PAUSED</h3>
-              <p style="color: #fca5a5; font-size: 0.85rem; margin: 0;">Outreach is paused on all devices. All leads, claimed positions, and histories are safe.</p>
+        <!-- Lower Controls: Settings, CSV Exports & Shield Ledger -->
+        <div class="controls-grid">
+          <!-- 2k Daily Cloud Target Settings -->
+          <div class="control-card">
+            <div class="control-title">
+              <span>⚡ 2,000/Day Meta Cloud Controller</span>
+              <span style="color: var(--gold-glow); font-size: 0.8rem;">Tier 2K Active</span>
             </div>
-            <form method="POST" action="/api/queue/resume" style="margin: 0;">
-              <button type="submit" class="btn" style="background: #10b981; color: #fff; padding: 0.75rem 1.5rem; font-size: 0.95rem; font-weight: 700; cursor: pointer;">▶️ Resume Outreach</button>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+              Adjust official Meta Cloud API daily allocation and speed pacing presets without restarting the server.
+            </p>
+            <form method="POST" action="/api/settings/cloud-limit" style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="number" name="limit" min="100" max="10000" value="${dailyTarget}" style="width: 110px; background: var(--bg-dark); border: 1px solid var(--panel-border); border-radius: 8px; color: #fff; padding: 0.5rem; font-weight: 700; text-align: center;" required />
+              <button type="submit" class="btn btn-gold" style="font-size: 0.8rem;">Update Limit</button>
             </form>
-          </div>
-        ` : `
-          <div style="background: #022c22; border: 1px solid #059669; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-            <div>
-              <h3 style="color: #34d399; margin-bottom: 0.25rem;">⚡ Multi-Device Engine ACTIVE (9:00 AM – 9:00 PM IST)</h3>
-              <p style="color: #6ee7b7; font-size: 0.85rem; margin: 0;">Active Daylight Hours • Micro-batches with 1–2m jitter &amp; 50–80m breaks • Commercial &amp; NRI Targeting.</p>
-            </div>
-            <form method="POST" action="/api/queue/pause" style="margin: 0;">
-              <button type="submit" class="btn" style="background: #dc2626; color: #fff; padding: 0.75rem 1.5rem; font-size: 0.95rem; font-weight: 700; cursor: pointer;">🛑 Pause Outreach</button>
-            </form>
-          </div>
-        `}
-
-        <!-- Hot Leads Section with 1-Click CSV Export -->
-        <div class="section-box" style="border-left: 4px solid #f59e0b; background: #78350f15;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div>
-              <h3 style="margin: 0; color: #fbbf24;">🔥 Hot Property Investor Leads (${hotLeads.length})</h3>
-              <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.2rem;">Investors &amp; buyers who replied to outreach. Ready for closing / site visit booking.</p>
-            </div>
-            <a href="/api/leads/export-csv" class="btn btn-gold">📥 Download Hot Leads (.CSV)</a>
-          </div>
-          ${hotLeads.length === 0 ? '<p style="color: #64748b; font-size: 0.85rem;">No replies yet today. As soon as property investors respond, they appear here instantly.</p>' : `
-            <div style="max-height: 220px; overflow-y: auto; background: #070b14; border-radius: 8px; padding: 0.5rem;">
-              ${hotLeads.slice(-10).reverse().map(l => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid #1e293b;">
-                  <div>
-                    <strong style="color: #f1f5f9;">+${l.phone}</strong>
-                    <span style="color: #94a3b8; font-size: 0.8rem; margin-left: 0.5rem;">${l.name || 'Valued Investor'}</span>
-                  </div>
-                  <a href="https://wa.me/${l.phone}" target="_blank" class="btn btn-emerald" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; text-decoration: none;">💬 WhatsApp</a>
-                </div>
-              `).join('')}
-            </div>
-          `}
-        </div>
-
-        <!-- Persistent Multi-Turn AI Conversations Inspector -->
-        <div class="section-box" style="border-left: 4px solid #818cf8; background: #312e8112;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div>
-              <h3 style="margin: 0; color: #a5b4fc;">🧠 Active Real Estate Chat Threads (${conversations.length} Active in Memory)</h3>
-              <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.2rem;">
-                Multi-turn persistent conversational memory. Automatically tracks stage, answers queries, and remembers past interactions.
-              </p>
-            </div>
-            <a href="/api/conversations" target="_blank" class="btn btn-outline" style="font-size: 0.8rem;">🔍 View JSON Memory</a>
-          </div>
-
-          ${conversations.length === 0 ? '<p style="color: #64748b; font-size: 0.85rem;">No conversations active yet. As outreach begins and leads reply, their full chat history appears here.</p>' : `
-            <div style="max-height: 280px; overflow-y: auto; background: #070b14; border-radius: 8px; padding: 0.5rem;">
-              ${conversations.slice(0, 20).map(c => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.5rem; border-bottom: 1px solid #1e293b; flex-wrap: wrap; gap: 0.5rem;">
-                  <div>
-                    <strong style="color: #f1f5f9;">+${c.phone}</strong>
-                    <span style="color: #94a3b8; font-size: 0.8rem; margin-left: 0.5rem;">
-                      ${c.profile.name || 'Sir'} • ${c.profile.city || 'Karnal'} (${c.profile.propertyInterest || 'Commercial'})
-                    </span>
-                    <span class="badge-pill" style="margin-left: 0.5rem; font-size: 0.7rem; background: ${c.profile.stage === 'replied' || c.profile.stage === 'consultation_active' ? '#064e3b' : '#1e293b'}; color: ${c.profile.stage === 'replied' || c.profile.stage === 'consultation_active' ? '#6ee7b7' : '#94a3b8'};">
-                      ${c.profile.stage}
-                    </span>
-                    <span style="color: #64748b; font-size: 0.75rem; margin-left: 0.4rem;">(${c.messageCount} msgs)</span>
-                    ${c.lastMessage ? `
-                      <div style="color: #94a3b8; font-size: 0.78rem; margin-top: 0.2rem; max-width: 550px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        <em>${c.lastMessage.role === 'assistant' ? 'Aman (Bot):' : 'Lead:'}</em> "${(c.lastMessage.content || '').replace(/"/g, '&quot;')}"
-                      </div>
-                    ` : ''}
-                  </div>
-                  <a href="https://wa.me/${c.phone}" target="_blank" class="btn btn-emerald" style="padding: 0.3rem 0.65rem; font-size: 0.75rem; text-decoration: none;">💬 WhatsApp</a>
-                </div>
-              `).join('')}
-            </div>
-          `}
-        </div>
-
-        <!-- Discovered Leads List & Manager (Turns all leads into a list) -->
-        <div class="section-box" style="border-left: 4px solid #10b981; background: #064e3b12;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div>
-              <h3 style="margin: 0; color: #34d399;">📋 All Discovered Leads List (${allLeads.length} Total in DB)</h3>
-              <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.2rem;">
-                Karnal commercial buyers, SCO investors, and global NRIs. Download or copy as a formatted list below.
-              </p>
-            </div>
-            <div class="btn-group">
-              <a href="/api/leads/export-all-csv" class="btn btn-emerald">📥 Export All (.CSV)</a>
-              <a href="/api/leads/export-list-txt" class="btn btn-outline">📋 Download Phone List (.TXT)</a>
+            <div style="margin-top: 0.85rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
+              <form method="POST" action="/api/settings/pacing" style="margin:0;">
+                <input type="hidden" name="preset" value="turbo">
+                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">🚀 Turbo (25s–45s)</button>
+              </form>
+              <form method="POST" action="/api/settings/pacing" style="margin:0;">
+                <input type="hidden" name="preset" value="fast">
+                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">⚡ Fast (35s–70s)</button>
+              </form>
+              <form method="POST" action="/api/settings/pacing" style="margin:0;">
+                <input type="hidden" name="preset" value="enterprise">
+                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">🛡️ Safe (3m–6m)</button>
+              </form>
             </div>
           </div>
 
-          <details style="margin-bottom: 1rem; background: #070b14; padding: 0.75rem; border-radius: 8px; border: 1px solid #1e293b;">
-            <summary style="cursor: pointer; color: #34d399; font-weight: 600; font-size: 0.85rem;">📄 Click to view copyable raw numbers list (${allLeads.length} numbers)</summary>
-            <textarea readonly style="margin-top: 0.5rem; width: 100%; height: 120px; font-family: monospace; font-size: 0.8rem;" onclick="this.select()">${allLeads.map(l => '+' + l.phone).join('\n')}</textarea>
-          </details>
-
-          ${allLeads.length === 0 ? '<p style="color: #64748b; font-size: 0.85rem;">No leads in database yet. Trigger the scraper below to harvest fresh numbers.</p>' : `
-            <div style="max-height: 280px; overflow-y: auto; background: #070b14; border-radius: 8px; padding: 0.5rem;">
-              ${allLeads.slice(0, 50).map(l => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid #1e293b;">
-                  <div>
-                    <strong style="color: #f1f5f9;">+${l.phone}</strong>
-                    <span style="color: #94a3b8; font-size: 0.8rem; margin-left: 0.5rem;">${l.name || 'Investor'} • ${(l.city || 'Karnal').toUpperCase()}</span>
-                    <span class="badge-pill ${l.status === 'replied' ? 'badge-online' : (l.status === 'sent' ? 'badge-online' : 'badge-offline')}" style="margin-left: 0.5rem; font-size: 0.7rem;">
-                      ${l.status}
-                    </span>
-                  </div>
-                  <a href="https://wa.me/${l.phone}" target="_blank" class="btn btn-emerald" style="padding: 0.3rem 0.65rem; font-size: 0.75rem; text-decoration: none;">💬 WhatsApp</a>
-                </div>
-              `).join('')}
+          <!-- 1-Click CSV Exports -->
+          <div class="control-card">
+            <div class="control-title">
+              <span>📥 Export CRM Data &amp; Leads</span>
+              <span style="color: var(--wa-green); font-size: 0.8rem;">1-Click</span>
             </div>
-          `}
-        </div>
-
-        <div class="section-box">
-          <h3>📥 Add Investor Phone Numbers to Queue</h3>
-          <form method="POST" action="/api/leads/add-form">
-            <textarea name="numbers" placeholder="Paste phone numbers (India 10-digit/91 or Global NRIs +1, +44, +61, +971)..."></textarea>
-            <div class="btn-group">
-              <button type="submit" class="btn btn-gold">+ Add to Real Estate Lead Queue</button>
-              <a href="/qr" class="btn btn-outline">📱 Scan / Manage Devices</a>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+              Download all prospective property buyers, hot inquiries, and NRI investors in structured spreadsheet format.
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <a href="/api/leads/export-csv" class="btn btn-gold" style="font-size: 0.8rem;">🔥 Download Hot Leads (.CSV)</a>
+              <a href="/api/conversations" target="_blank" class="btn btn-outline" style="font-size: 0.8rem;">🔍 Raw Memory JSON</a>
             </div>
-          </form>
-        </div>
-
-        <div class="section-box" style="border-left: 4px solid #a855f7;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <h3 style="margin: 0; color: #c084fc;">🛡️ Shield Past Investor Numbers (Past Campaigns / Blacklist)</h3>
-            <span style="background: #581c87; color: #e9d5ff; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 700;">DUPLICATE SHIELD</span>
           </div>
-          <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.75rem;">
-            Paste numbers from past campaigns, spreadsheets, or DND requests below (one per line). They will be recorded in the permanent shield ledger so no device contacts them!
-          </p>
-          <form method="POST" action="/api/leads/shield-past">
-            <textarea name="pastNumbers" placeholder="Paste numbers here (one per line, e.g. 9876543210, +14165551234, etc.)..."></textarea>
-            <button type="submit" class="btn" style="background: #7c3aed; color: #fff; font-weight: 700; cursor: pointer;">🛡️ Permanently Shield These Numbers</button>
-          </form>
-        </div>
 
-        <div class="section-box" style="border-color: #f59e0b; background: #78350f10;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <h3 style="margin: 0; color: #fbbf24;">🌐 Yandex &amp; Global Real Estate Scraper</h3>
-            <span style="background: ${scraperStats.isPaused ? '#7f1d1d' : '#065f46'}; color: ${scraperStats.isPaused ? '#fca5a5' : '#a7f3d0'}; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 700;">${scraperStats.isPaused ? 'PAUSED' : 'ACTIVE 24/7'}</span>
-          </div>
-          <p class="log-box" style="margin-bottom: 0.75rem;">
-            Status: <strong>${scraperStats.status}</strong><br>
-            Cycles Completed: <strong>${scraperStats.cyclesCompleted}</strong> | Harvested This Session: <strong>${scraperStats.leadsHarvestedSession}</strong> | Total in DB: <strong>${scraperStats.totalInDb}</strong><br>
-            Target Territory: <strong>${(scraperStats.lastScrapedCity || 'Karnal').toUpperCase()}</strong> (${scraperStats.lastScrapedNiche || 'Commercial Spaces & SCOs'})
-          </p>
-          <div class="btn-group">
-            <form method="POST" action="/api/scraper/trigger-free-form" style="margin: 0;">
-              <button type="submit" class="btn btn-gold">⚡ Trigger Instant Real Estate Sweep (30+ Leads)</button>
-            </form>
-            <form method="POST" action="${scraperStats.isPaused ? '/api/scraper/resume' : '/api/scraper/pause'}" style="margin: 0;">
-              <button type="submit" class="btn btn-outline">${scraperStats.isPaused ? '▶️ Resume Auto-Scraper' : '⏸️ Pause Auto-Scraper'}</button>
+          <!-- Shield Past Numbers Ledger -->
+          <div class="control-card">
+            <div class="control-title">
+              <span>🛡️ Shield Past Numbers Ledger</span>
+              <span style="color: #a855f7; font-size: 0.8rem;">Zero Duplicates</span>
+            </div>
+            <form method="POST" action="/api/shield/bulk">
+              <textarea name="numbers" class="shield-input" placeholder="Paste phone numbers to permanently shield (one per line)..."></textarea>
+              <button type="submit" class="btn btn-outline" style="font-size: 0.78rem; margin-top: 0.5rem; width: 100%;">🔒 Lock &amp; Shield Numbers</button>
             </form>
           </div>
         </div>
       </div>
+
+      <!-- Real-Time Telemetry & WhatsApp Web Console Client Logic -->
       <script>
-        function updateCountdowns() {
-          var now = Date.now();
-          document.querySelectorAll('.countdown-timer').forEach(function(el) {
-            var target = parseInt(el.getAttribute('data-target') || '0', 10);
-            if (!target) return;
-            var diff = Math.max(0, Math.floor((target - now) / 1000));
-            if (diff > 0) {
-              var mins = Math.floor(diff / 60);
-              var secs = diff % 60;
-              var title = el.getAttribute('title') || '';
-              var minsStr = (mins < 10 ? '0' : '') + mins;
-              var secsStr = (secs < 10 ? '0' : '') + secs;
-              el.innerText = 'in ' + minsStr + ':' + secsStr + ' (' + title + ')';
-            } else {
-              el.innerText = 'Dispatching now / Ready';
+        let allConversations = [];
+        let currentFilter = 'all';
+        let activePhone = null;
+
+        // Auto-poll live telemetry every 3.5 seconds
+        async function fetchLiveTelemetry() {
+          try {
+            const res = await fetch('/api/dashboard/live');
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data.success) return;
+
+            // 1. Update Telemetry Cards
+            const sent = data.dailySentCount || 0;
+            const target = data.dailyMaxLeads || 2000;
+            const pct = Math.min(100, Math.round((sent / Math.max(1, target)) * 100));
+
+            document.getElementById('valDailySent').innerHTML = sent + ' <span style="font-size: 1rem; color: var(--text-muted);">/ ' + target + '</span>';
+            document.getElementById('barDailyFill').style.width = pct + '%';
+            document.getElementById('lblProgressPct').innerText = pct + '% Dispatched';
+            document.getElementById('valHotInquiries').innerText = data.metrics?.repliedCount || 0;
+            document.getElementById('valResponseRate').innerText = data.metrics?.responseRate || '0.0%';
+            document.getElementById('valQueuedLeads').innerText = data.queuedRemaining || 0;
+            document.getElementById('valConversations').innerText = data.metrics?.totalConversations || data.conversations?.length || 0;
+            document.getElementById('valTotalSent').innerText = data.totalSentDb || data.metrics?.totalOutreachSent || 0;
+
+            // 2. Update Real-Time Ticker
+            if (Array.isArray(data.activityFeed) && data.activityFeed.length > 0) {
+              const tickerBox = document.getElementById('tickerItems');
+              tickerBox.innerHTML = data.activityFeed.slice(0, 15).map(item => {
+                let color = '#38bdf8';
+                let icon = '⚡';
+                if (item.type === 'inbound_inquiry') { color = '#f87171'; icon = '🔥'; }
+                else if (item.type === 'ai_reply') { color = '#4ade80'; icon = '🤖'; }
+                else if (item.type === 'delivery_receipt') { color = '#a855f7'; icon = '👁️'; }
+                else if (item.type === 'outreach_sent') { color = '#fbbf24'; icon = '📤'; }
+                return '<div class="ticker-pill"><span style="color:' + color + ';">' + icon + ' ' + (item.timeStr || '') + '</span> <strong>+' + item.phone + '</strong>: ' + escapeHtml(item.title) + '</div>';
+              }).join('');
             }
-          });
+
+            // 3. Update Conversation List
+            if (Array.isArray(data.conversations)) {
+              allConversations = data.conversations;
+              renderContactsList();
+            }
+
+            // 4. If a conversation is active, refresh its thread
+            if (activePhone) {
+              refreshActiveChat(activePhone);
+            }
+          } catch (e) {
+            console.warn('Telemetry poll error:', e);
+          }
         }
-        setInterval(updateCountdowns, 1000);
-        updateCountdowns();
-        setTimeout(function() {
-          window.location.reload();
-        }, 15000);
+
+        function setFilter(filter, el) {
+          currentFilter = filter;
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          if (el) el.classList.add('active');
+          renderContactsList();
+        }
+
+        function filterContacts() {
+          renderContactsList();
+        }
+
+        function renderContactsList() {
+          const container = document.getElementById('contactsContainer');
+          const query = (document.getElementById('contactSearch').value || '').toLowerCase();
+
+          let filtered = allConversations.filter(c => {
+            const phone = String(c.phone || '');
+            const name = String(c.profile?.name || '').toLowerCase();
+            const lastMsg = String(c.lastMessage?.content || '').toLowerCase();
+
+            // Search query filter
+            if (query && !phone.includes(query) && !name.includes(query) && !lastMsg.includes(query)) {
+              return false;
+            }
+
+            // Tab filter
+            if (currentFilter === 'inquiries') {
+              return c.profile?.inquiriesReceived > 0 || c.profile?.stage === 'replied' || c.profile?.stage === 'hot_inquiry';
+            }
+            if (currentFilter === 'sent') {
+              return c.profile?.stage === 'outreach_sent';
+            }
+            if (currentFilter === 'nri') {
+              return !phone.startsWith('91');
+            }
+            return true;
+          });
+
+          document.getElementById('inboxCounter').innerText = filtered.length + ' Contacts';
+
+          if (filtered.length === 0) {
+            container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">No contacts found matching this view.</div>';
+            return;
+          }
+
+          container.innerHTML = filtered.map(c => {
+            const isSelected = c.phone === activePhone;
+            const isHot = c.profile?.sentiment === 'HOT' || c.profile?.stage === 'hot_inquiry' || c.profile?.stage === 'replied';
+            const name = c.profile?.name || 'Valued Investor';
+            const initial = (name.charAt(0) || 'I').toUpperCase();
+            const lastContent = c.lastMessage ? c.lastMessage.content : 'Outreach dispatched';
+            const timeStr = c.lastMessage?.timestamp ? formatTimeAgo(c.lastMessage.timestamp) : '';
+
+            return '<div class="contact-item ' + (isSelected ? 'selected' : '') + '" onclick="selectContact(\'' + c.phone + '\')">' +
+              '<div class="contact-avatar">' + initial + '</div>' +
+              '<div class="contact-info">' +
+                '<div class="contact-top">' +
+                  '<span class="contact-name">+' + c.phone + ' • ' + escapeHtml(name) + '</span>' +
+                  '<span class="contact-time">' + timeStr + '</span>' +
+                '</div>' +
+                '<div class="contact-preview">' + escapeHtml(lastContent) + '</div>' +
+                '<div style="margin-top: 0.2rem; display: flex; gap: 0.35rem;">' +
+                  (isHot ? '<span class="badge-hot">🔥 INQUIRY</span>' : '<span class="badge-outreach">📤 SENT</span>') +
+                  (c.profile?.propertyInterest ? '<span style="font-size:0.65rem; color:#94a3b8;">' + escapeHtml(c.profile.propertyInterest) + '</span>' : '') +
+                '</div>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        }
+
+        async function selectContact(phone) {
+          activePhone = phone;
+          renderContactsList(); // update selected state
+
+          document.getElementById('manualMsgInput').disabled = false;
+          document.getElementById('btnSendManual').disabled = false;
+          document.getElementById('chatHeaderActions').style.display = 'flex';
+          document.getElementById('btnOpenWa').href = 'https://wa.me/' + phone;
+
+          await refreshActiveChat(phone, true);
+        }
+
+        async function refreshActiveChat(phone, shouldScroll = false) {
+          try {
+            const res = await fetch('/api/conversations/' + phone);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data.success || !data.conversation) return;
+
+            const conv = data.conversation;
+            const profile = conv.profile || {};
+            const name = profile.name || 'Valued Investor';
+
+            document.getElementById('activeName').innerText = '+' + phone + ' (' + name + ')';
+            document.getElementById('activeAvatar').innerText = (name.charAt(0) || 'I').toUpperCase();
+            document.getElementById('activeMeta').innerText = (profile.propertyInterest || 'Karnal Real Estate') + ' • ' + (profile.leadType || 'Domestic') + ' • Stage: ' + (profile.stage || 'outreach_sent');
+
+            const chatWindow = document.getElementById('chatWindow');
+            if (conv.messages && conv.messages.length > 0) {
+              chatWindow.innerHTML = conv.messages.map(m => {
+                const isOut = m.role === 'assistant';
+                const timeStr = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
+                const tag = isOut ? (m.isInitialOutreach ? '📤 Outreach Template' : '🤖 Aman Sharma (AI Consultant)') : '👤 Lead Inquiry';
+                const ticks = isOut ? (m.status === 'read' ? '✓✓' : '✓') : '';
+
+                return '<div class="chat-bubble ' + (isOut ? 'outbound' : 'inbound') + '">' +
+                  '<div class="bubble-tag">' + tag + '</div>' +
+                  '<div>' + escapeHtml(m.content) + '</div>' +
+                  '<div class="bubble-meta"><span>' + timeStr + '</span>' + (ticks ? ' <span style="color:#38bdf8;">' + ticks + '</span>' : '') + '</div>' +
+                '</div>';
+              }).join('');
+
+              if (shouldScroll) {
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+              }
+            } else {
+              chatWindow.innerHTML = '<div style="text-align: center; color: var(--text-muted); margin: auto;">No messages logged for this contact yet.</div>';
+            }
+          } catch (e) {
+            console.error('Error refreshing chat:', e);
+          }
+        }
+
+        async function sendCustomMessage() {
+          const input = document.getElementById('manualMsgInput');
+          const text = (input.value || '').trim();
+          if (!text || !activePhone) return;
+
+          input.value = '';
+          try {
+            const res = await fetch('/api/conversations/' + activePhone + '/send', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text })
+            });
+            const data = await res.json();
+            if (data.success) {
+              await refreshActiveChat(activePhone, true);
+              fetchLiveTelemetry();
+            } else {
+              alert('Failed to dispatch message: ' + (data.error || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error sending message: ' + e.message);
+          }
+        }
+
+        function sendQuickChip(text) {
+          if (!activePhone) {
+            alert('Please select a contact from the inbox on the left first!');
+            return;
+          }
+          document.getElementById('manualMsgInput').value = text;
+          sendCustomMessage();
+        }
+
+        function formatTimeAgo(ts) {
+          const diff = Math.floor((Date.now() - ts) / 1000);
+          if (diff < 60) return 'Just now';
+          if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+          if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+          return Math.floor(diff / 86400) + 'd ago';
+        }
+
+        function escapeHtml(str) {
+          if (!str) return '';
+          return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        }
+
+        // Start real-time polling immediately
+        fetchLiveTelemetry();
+        setInterval(fetchLiveTelemetry, 3500);
       </script>
     </body>
     </html>
   `);
+});
+
+/**
+ * Real-Time Telemetry & MBG Card Dashboard API Endpoints
+ */
+app.get('/api/dashboard/live', (req, res) => {
+  const queueState = queue.getQueueState ? queue.getQueueState() : {};
+  const metrics = chatMemory.getMetrics ? chatMemory.getMetrics() : {};
+  const activityFeed = chatMemory.getActivityFeed ? chatMemory.getActivityFeed() : [];
+  const inquiries = chatMemory.getInquiries ? chatMemory.getInquiries() : [];
+  const conversations = chatMemory.getAllConversations ? chatMemory.getAllConversations() : [];
+  const scraperStats = scraper.getScraperStats ? scraper.getScraperStats() : {};
+  const totalShielded = scraper.getTotalShieldedCount ? scraper.getTotalShieldedCount() : 0;
+
+  res.json({
+    success: true,
+    engine: whatsapp.getActiveEngine ? whatsapp.getActiveEngine() : 'meta_cloud',
+    metaCloud: queueState.metaCloud || {},
+    dailySentCount: queueState.dailySentCount || 0,
+    dailyMaxLeads: queueState.dailyMaxLeads || 2000,
+    totalSentDb: queueState.totalSentDb || 0,
+    queuedRemaining: queueState.queuedRemaining || 0,
+    isPaused: queueState.isPaused || false,
+    totalShielded,
+    metrics,
+    activityFeed,
+    inquiries,
+    conversations: conversations.slice(0, 100),
+    scraper: scraperStats,
+    timestamp: Date.now()
+  });
+});
+
+app.get('/api/conversations/:phone', (req, res) => {
+  const conv = chatMemory.getConversation ? chatMemory.getConversation(req.params.phone) : null;
+  if (!conv) {
+    return res.status(404).json({ success: false, error: 'Conversation not found' });
+  }
+  res.json({ success: true, conversation: conv });
+});
+
+app.post('/api/conversations/:phone/send', async (req, res) => {
+  const targetPhone = chatMemory.normalizePhone ? chatMemory.normalizePhone(req.params.phone) : String(req.params.phone).replace(/\D/g, '');
+  const text = (req.body.text || '').trim();
+  if (!targetPhone || !text) {
+    return res.status(400).json({ success: false, error: 'Recipient phone and message text are required.' });
+  }
+
+  try {
+    let sent = false;
+    if (whatsapp.getActiveEngine() === 'meta_cloud') {
+      const result = await whatsapp.metaCloud.sendTextMessage(targetPhone, text);
+      sent = Boolean(result && result.success);
+    } else {
+      sent = await whatsapp.sendTextMessage(1, `${targetPhone}@s.whatsapp.net`, text);
+    }
+
+    if (sent) {
+      if (chatMemory.recordReply) {
+        chatMemory.recordReply(targetPhone, text, 'manual_admin');
+      }
+      return res.json({ success: true, message: 'Message dispatched successfully!' });
+    }
+    return res.status(500).json({ success: false, error: 'Failed to dispatch message.' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 /**
@@ -851,6 +1325,9 @@ app.post('/api/meta/webhook', async (req, res) => {
         console.warn(`⚠️ [Meta Delivery Failed] to +${st.recipient}:`, st.errors);
       } else {
         console.log(`📬 [Meta Delivery Receipt] +${st.recipient} -> Status: ${st.status.toUpperCase()}`);
+        if (chatMemory.updateDeliveryStatus) {
+          chatMemory.updateDeliveryStatus(st.recipient, st.status);
+        }
       }
     }
 
@@ -867,7 +1344,9 @@ app.post('/api/meta/webhook', async (req, res) => {
       scraper.updateLeadStatus(cleanPhone, 'replied', `Inbound: ${incomingText.substring(0, 30)}`, 'meta_cloud');
 
       // Record in multi-turn chat memory
-      chatMemory.recordInbound(cleanPhone, incomingText);
+      if (chatMemory.recordIncoming) {
+        chatMemory.recordIncoming(cleanPhone, incomingText);
+      }
 
       // Check for Opt-Out / Stop requests
       const lower = incomingText.toLowerCase();
@@ -876,13 +1355,16 @@ app.post('/api/meta/webhook', async (req, res) => {
         scraper.recordSentPhone(cleanPhone);
         const optOutMsg = 'Aapka number Karnal Realty investor desk se remove kar diya gaya hai. Aage se koi updates nahi aayenge. Dhanyawad.';
         await whatsapp.metaCloud.sendTextMessage(cleanPhone, optOutMsg);
+        if (chatMemory.recordReply) {
+          chatMemory.recordReply(cleanPhone, optOutMsg, 'opted_out');
+        }
         continue;
       }
 
       // Generate AI Real Estate Qualified Response
-      const history = chatMemory.getFormattedHistory(cleanPhone, 10);
-      const leadProfile = chatMemory.getProfile(cleanPhone);
-      const leadName = leadProfile.name || 'Investor';
+      const history = chatMemory.getFormattedHistory ? chatMemory.getFormattedHistory(cleanPhone, 14) : [];
+      const convData = chatMemory.getConversation ? chatMemory.getConversation(cleanPhone) : null;
+      const leadName = convData?.profile?.name || 'Investor';
 
       const aiReply = await ai.handleIncomingMessage(leadName, incomingText, history, cleanPhone);
 
@@ -890,7 +1372,9 @@ app.post('/api/meta/webhook', async (req, res) => {
         console.log(`🤖 [AI Auto-Reply via Meta Cloud] To +${cleanPhone}: "${aiReply.substring(0, 50)}..."`);
         const sent = await whatsapp.metaCloud.sendTextMessage(cleanPhone, aiReply);
         if (sent && sent.success) {
-          chatMemory.recordOutreach(cleanPhone, aiReply, { name: leadName });
+          if (chatMemory.recordReply) {
+            chatMemory.recordReply(cleanPhone, aiReply);
+          }
         }
       }
     }
