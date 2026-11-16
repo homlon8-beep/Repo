@@ -29,8 +29,11 @@ function loadSentHistory() {
 function recordSentPhone(phone) {
   if (!phone) return;
   const digits = String(phone).replace(/\D/g, '');
+  if (!digits) return;
   const history = loadSentHistory();
   history.add(digits);
+  if (digits.length === 10) history.add('91' + digits);
+  if (digits.startsWith('91') && digits.length === 12) history.add(digits.slice(2));
   try {
     fs.writeFileSync(SENT_HISTORY_FILE, JSON.stringify([...history], null, 2), 'utf8');
   } catch (e) {}
@@ -63,8 +66,12 @@ function getTotalShieldedCount() {
 function isPhoneAlreadySent(phone) {
   if (!phone) return false;
   const digits = String(phone).replace(/\D/g, '');
+  if (!digits) return false;
   const history = loadSentHistory();
-  return history.has(digits);
+  if (history.has(digits)) return true;
+  if (digits.length === 10 && history.has('91' + digits)) return true;
+  if (digits.startsWith('91') && digits.length === 12 && history.has(digits.slice(2))) return true;
+  return false;
 }
 
 function loadDatabase() {
@@ -280,12 +287,49 @@ function evaluateHotLeadScore(query = '', item = {}) {
   return score;
 }
 
+/**
+ * Strict Geographic & Real Estate Intent Qualification for Karnal
+ * Rejects leads outside Karnal, and requires NRIs to have explicit Karnal investment intent.
+ */
+function isStrictKarnalLead(item) {
+  if (!item) return false;
+  const phone = String(item.phone || item.number || '').replace(/\D/g, '');
+  const country = String(item.country || '').toLowerCase();
+  const location = String(item.location || '').toLowerCase();
+  const query = String(item.query || '').toLowerCase();
+  const segment = String(item.segment || '').toLowerCase();
+  const name = String(item.name || '').toLowerCase();
+  const city = String(item.city || '').toLowerCase();
+  const allText = `${location} ${query} ${segment} ${name} ${city}`;
+
+  const karnalKeywords = [
+    'karnal', 'gt road', 'sector 12', 'sector 32', 'sector 33', 'sector 8',
+    'sector 9', 'sector 13', 'sector 14', 'sector 6', 'sector 7', 'sector 4',
+    'model town', 'mughal canal', 'kunjpura', 'namaste chowk', 'mall road',
+    'chd city', 'alpha city', 'ansal', 'urban estate', 'railway road'
+  ];
+
+  const mentionsKarnal = karnalKeywords.some(kw => allText.includes(kw));
+
+  // NRI check (non-India phone or overseas country)
+  const isNri = (phone.length > 0 && !phone.startsWith('91')) || (country && country !== 'india');
+  if (isNri) {
+    // NRIs MUST explicitly target Karnal property
+    return mentionsKarnal;
+  }
+
+  // Domestic Indian numbers: must have explicit Karnal locality or city == 'karnal'
+  return mentionsKarnal || city === 'karnal';
+}
+
 function addLeadsToQueue(newLeads = [], defaultAccount = null) {
   const db = loadDatabase();
   const existingPhones = new Set(db.leads.map(l => l.phone));
   let added = 0;
 
   for (const item of newLeads) {
+    if (!isStrictKarnalLead(item)) continue; // Filter out non-Karnal leads immediately!
+
     const formatted = formatWhatsAppJid(item.phone || item.number);
     if (!formatted) continue;
 
@@ -328,8 +372,8 @@ function claimNextLead(deviceId) {
   const now = Date.now();
   const devKey = `device_${deviceId}`;
 
-  // Filter all candidates that haven't been sent yet
-  const available = db.leads.filter(l => !isPhoneAlreadySent(l.phone));
+  // Filter all candidates that haven't been sent yet and strictly match Karnal intent
+  const available = db.leads.filter(l => !isPhoneAlreadySent(l.phone) && isStrictKarnalLead(l));
 
   // 1. Check hot leads assigned to this device slot
   let candidates = available.filter(l => l.status === 'queued' && (l.assignedAccount === devKey || l.assignedAccount === String(deviceId)));
@@ -685,6 +729,7 @@ module.exports = {
   pauseScraper,
   resumeScraper,
   isPhoneAlreadySent,
+  isStrictKarnalLead,
   recordSentPhone,
   recordBulkSentPhones,
   getTotalShieldedCount,

@@ -103,7 +103,7 @@ app.get('/', (req, res) => {
   const conversations = chatMemory.getAllConversations ? chatMemory.getAllConversations() : [];
   const activeEngine = whatsapp.getActiveEngine ? whatsapp.getActiveEngine() : 'meta_cloud';
   const isMetaCloud = activeEngine === 'meta_cloud';
-  const dailyTarget = state.dailyMaxLeads || 100;
+  const dailyTarget = state.dailyMaxLeads || 250;
   const currentSent = state.dailySentCount || 0;
   const progressPct = Math.min(100, Math.round((currentSent / Math.max(1, dailyTarget)) * 100));
 
@@ -119,7 +119,7 @@ app.get('/', (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>🏢 Satyam Realty — Official Meta WhatsApp Cloud Bot (100/Day)</title>
+      <title>🏢 Satyam Realty — Official Meta WhatsApp Cloud Bot (250/Day)</title>
       <style>
         :root {
           --bg-dark: #070b12;
@@ -500,7 +500,7 @@ app.get('/', (req, res) => {
             <img src="/assets/karnal_reality_logo.jpg" alt="Logo" class="brand-logo" onerror="this.style.display='none'" />
             <div class="brand-text">
               <h1>🏢 SATYAM REALTY — OFFICIAL META WHATSAPP CLOUD BOT</h1>
-              <p>Official Meta WhatsApp API (+91 8901849699) • 100 Verified Outreach/Day • Stealth Cloud Cadence</p>
+              <p>Official Meta WhatsApp API (+91 8901849699) • 250 Verified Outreach/Day • Strict Karnal Property Buyers</p>
             </div>
           </div>
           <div class="header-actions">
@@ -524,11 +524,11 @@ app.get('/', (req, res) => {
 
         <!-- Telemetry Metrics Grid (MBG Card Layout) -->
         <div class="metrics-grid">
-          <!-- Card 1: 100 Daily Cloud Target -->
+          <!-- Card 1: 250 Daily Cloud Target -->
           <div class="metric-card">
             <div class="metric-label">
               <span>Today's Outreach</span>
-              <span style="color: var(--gold); font-size: 0.7rem; font-weight: 800;">100 / DAY CLOUD TIER</span>
+              <span style="color: var(--gold); font-size: 0.7rem; font-weight: 800;">250 / DAY CLOUD TIER</span>
             </div>
             <div class="metric-val" id="valDailySent" style="color: var(--wa-green);">${currentSent} <span style="font-size: 1rem; color: var(--text-muted);">/ ${dailyTarget}</span></div>
             <div class="progress-bar-container">
@@ -536,7 +536,7 @@ app.get('/', (req, res) => {
             </div>
             <div class="metric-sub" style="margin-top: 0.4rem; display: flex; justify-content: space-between;">
               <span id="lblProgressPct">${progressPct}% Dispatched</span>
-              <span style="color: #38bdf8;">~14m Cloud Cadence (100 msgs/day)</span>
+              <span style="color: #38bdf8;">~5.5m Cloud Cadence (250 msgs/day)</span>
             </div>
           </div>
 
@@ -817,11 +817,11 @@ app.get('/', (req, res) => {
 
         <!-- Lower Controls: Settings, CSV Exports & Shield Ledger -->
         <div class="controls-grid">
-          <!-- 100/Day Daily Cloud Target Settings -->
+          <!-- 250/Day Daily Cloud Target Settings -->
           <div class="control-card">
             <div class="control-title">
-              <span>⚡ 100/Day Official Meta WhatsApp Cloud Controller</span>
-              <span style="color: var(--gold-glow); font-size: 0.8rem;">Tier 100 Active</span>
+              <span>⚡ 250/Day Official Meta WhatsApp Cloud Controller</span>
+              <span style="color: var(--gold-glow); font-size: 0.8rem;">Tier 250 Active</span>
             </div>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.85rem;">
               Adjust official Meta WhatsApp Cloud API daily allocation and cadence pacing without restarting the server.
@@ -832,16 +832,16 @@ app.get('/', (req, res) => {
             </form>
             <div style="margin-top: 0.85rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
               <form method="POST" action="/api/settings/pacing" style="margin:0;">
-                <input type="hidden" name="preset" value="stealth_14m_100daily">
-                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">🛡️ Standard 100/Day (~14m)</button>
+                <input type="hidden" name="preset" value="stealth_5m_250daily">
+                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">🛡️ Standard 250/Day (~5.5m)</button>
               </form>
               <form method="POST" action="/api/settings/pacing" style="margin:0;">
                 <input type="hidden" name="preset" value="fast">
-                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">⚡ Fast 200/Day (~7m)</button>
+                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">⚡ Fast 500/Day (~2.8m)</button>
               </form>
               <form method="POST" action="/api/settings/pacing" style="margin:0;">
-                <input type="hidden" name="preset" value="enterprise">
-                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">🔒 Safe 50/Day (~28m)</button>
+                <input type="hidden" name="preset" value="stealth_14m_100daily">
+                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">🔒 Safe 100/Day (~14m)</button>
               </form>
             </div>
           </div>
@@ -898,7 +898,7 @@ app.get('/', (req, res) => {
 
             // 1. Update Telemetry Cards
             const sent = data.dailySentCount || 0;
-            const target = data.dailyMaxLeads || 100;
+            const target = data.dailyMaxLeads || 250;
             const pct = Math.min(100, Math.round((sent / Math.max(1, target)) * 100));
 
             document.getElementById('valDailySent').innerHTML = sent + ' <span style="font-size: 1rem; color: var(--text-muted);">/ ' + target + '</span>';
@@ -1042,12 +1042,19 @@ app.get('/', (req, res) => {
                 const isOut = m.role === 'assistant';
                 const timeStr = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
                 const tag = isOut ? (m.isInitialOutreach ? '📤 Outreach Template' : '🤖 Aman Sharma (AI Consultant)') : '👤 Lead Inquiry';
-                const ticks = isOut ? (m.status === 'read' ? '✓✓' : '✓') : '';
+                let ticks = '';
+                let tickColor = '#94a3b8';
+                if (isOut) {
+                  if (m.status === 'read') { ticks = '✓✓ Read'; tickColor = '#38bdf8'; }
+                  else if (m.status === 'delivered') { ticks = '✓✓ Delivered'; tickColor = '#4ade80'; }
+                  else if (m.status === 'failed') { ticks = '❌ Not on WhatsApp'; tickColor = '#f87171'; }
+                  else { ticks = '✓ Sent'; }
+                }
 
                 return '<div class="chat-bubble ' + (isOut ? 'outbound' : 'inbound') + '">' +
                   '<div class="bubble-tag">' + tag + '</div>' +
                   '<div>' + escapeHtml(m.content) + '</div>' +
-                  '<div class="bubble-meta"><span>' + timeStr + '</span>' + (ticks ? ' <span style="color:#38bdf8;">' + ticks + '</span>' : '') + '</div>' +
+                  '<div class="bubble-meta"><span>' + timeStr + '</span>' + (ticks ? ' <span style="color:' + tickColor + '; font-weight:700;">' + ticks + '</span>' : '') + '</div>' +
                 '</div>';
               }).join('');
 
@@ -1309,7 +1316,7 @@ app.get('/api/dashboard/live', (req, res) => {
     engine: whatsapp.getActiveEngine ? whatsapp.getActiveEngine() : 'meta_cloud',
     metaCloud: queueState.metaCloud || {},
     dailySentCount: queueState.dailySentCount || 0,
-    dailyMaxLeads: queueState.dailyMaxLeads || 100,
+    dailyMaxLeads: queueState.dailyMaxLeads || 250,
     totalSentDb: queueState.totalSentDb || 0,
     queuedRemaining: queueState.queuedRemaining || 0,
     isPaused: queueState.isPaused || false,
@@ -1494,6 +1501,15 @@ app.post('/api/meta/webhook', async (req, res) => {
     for (const st of parsed.statuses) {
       if (st.status === 'failed') {
         console.warn(`⚠️ [Meta Delivery Failed] to +${st.recipient}:`, st.errors);
+        if (chatMemory.updateDeliveryStatus) {
+          chatMemory.updateDeliveryStatus(st.recipient, 'failed');
+        }
+        if (scraper.updateLeadStatus) {
+          scraper.updateLeadStatus(st.recipient, 'not_on_whatsapp', 'Meta webhook: Number undeliverable', 'meta_cloud');
+        }
+        if (scraper.recordSentPhone) {
+          scraper.recordSentPhone(st.recipient);
+        }
       } else {
         console.log(`📬 [Meta Delivery Receipt] +${st.recipient} -> Status: ${st.status.toUpperCase()}`);
         if (chatMemory.updateDeliveryStatus) {
@@ -1657,10 +1673,10 @@ app.post('/api/settings/engine', (req, res) => {
 });
 
 /**
- * Update Cloud Daily Limit (Default 100/Day)
+ * Update Cloud Daily Limit (Default 250/Day)
  */
 app.post('/api/settings/cloud-limit', (req, res) => {
-  const limit = parseInt(req.body.limit || '100', 10);
+  const limit = parseInt(req.body.limit || '250', 10);
   queue.saveBotConfig({ dailyMaxLeadsCloud: limit });
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
     return res.json({ success: true, dailyMaxLeadsCloud: limit });

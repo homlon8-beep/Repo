@@ -70,7 +70,7 @@ const metaCloudState = {
 };
 
 function getDailyMaxLeadsCloud() {
-  return botConfig.dailyMaxLeadsCloud || 100;
+  return botConfig.dailyMaxLeadsCloud || 250;
 }
 
 function saveBotConfig(updates) {
@@ -111,7 +111,19 @@ function setDailyMaxLeadsPerDevice(count, preset = 'custom') {
 
   const updates = { dailyMaxLeadsPerDevice: num, pacingPreset: preset };
 
-  if (preset === 'stealth_14m_100daily' || preset === '100daily' || preset === 'cloud_100') {
+  if (preset === 'stealth_5m_250daily' || preset === '250daily' || preset === 'cloud_250') {
+    updates.dailyMaxLeadsPerDevice = 250;
+    updates.dailyMaxLeadsCloud = 250;
+    updates.minMsgDelayMs = 270000;
+    updates.maxMsgDelayMs = 390000;
+    updates.minBreakMins = 4;
+    updates.maxBreakMins = 7;
+    updates.minBatchSize = 1;
+    updates.maxBatchSize = 1;
+    updates.cloudMinMsgDelayMs = 270000;
+    updates.cloudMaxMsgDelayMs = 390000;
+    updates.businessHoursShield = false;
+  } else if (preset === 'stealth_14m_100daily' || preset === '100daily' || preset === 'cloud_100') {
     updates.dailyMaxLeadsPerDevice = 100;
     updates.dailyMaxLeadsCloud = 100;
     updates.minMsgDelayMs = 780000;
@@ -635,7 +647,14 @@ async function runMetaCloudWorker() {
       }
     }
 
-    // 5. Phone validation
+    // 5. Strict Geographic Qualification: Karnal Only & Real Estate Intent
+    if (scraper.isStrictKarnalLead && !scraper.isStrictKarnalLead(lead)) {
+      console.log(`⏩ [Karnal Territory Guard] Skipped lead +${lead.phone} (outside Karnal or non-Karnal NRI).`);
+      scraper.updateLeadStatus(lead.phone, 'skipped_non_karnal', 'Outside Karnal', 'meta_cloud');
+      continue;
+    }
+
+    // 6. Phone validation & Duplicate Shield
     const digits = String(lead.phone).replace(/\D/g, '');
     if (!digits || digits.length < 10) {
       scraper.updateLeadStatus(lead.phone, 'invalid_number', null, 'meta_cloud');
@@ -643,27 +662,33 @@ async function runMetaCloudWorker() {
     }
     const cleanPhone = digits.length === 10 ? `91${digits}` : digits;
 
-    // 6. Generate Personalized Outreach Message
+    if (scraper.isPhoneAlreadySent(cleanPhone) || scraper.isPhoneAlreadySent(digits)) {
+      console.log(`⏩ [Duplicate Shield] +${cleanPhone} was already contacted. Skipping!`);
+      scraper.updateLeadStatus(lead.phone, 'sent', 'Duplicate Shielded', 'meta_cloud');
+      continue;
+    }
+
+    // 7. Generate Personalized Outreach Message
     metaCloudState.currentStatus = `Generating AI outreach for +${cleanPhone}...`;
     const outreachText = await ai.generateFirstTouch(lead);
 
-    // 7. Send via Official Meta WhatsApp Cloud API
+    // 8. Send via Official Meta WhatsApp Cloud API (Zero Fake Count Guarantee)
     metaCloudState.currentStatus = `Sending Cloud API message to +${cleanPhone}...`;
     let sendSucceeded = false;
     try {
-      const activeTemplateName = (botConfig.metaCloudConfig && botConfig.metaCloudConfig.templateName) || process.env.META_TEMPLATE_NAME || whatsapp.metaCloud.defaultTemplate;
-      const activeTemplateLang = (botConfig.metaCloudConfig && botConfig.metaCloudConfig.templateLang) || process.env.META_TEMPLATE_LANG || whatsapp.metaCloud.defaultTemplateLang || 'hi';
-      const useTemplate = Boolean(botConfig.useMetaTemplate && activeTemplateName);
+      const activeTemplateName = (botConfig.metaCloudConfig && botConfig.metaCloudConfig.templateName) || (botConfig.mbgConfig && botConfig.mbgConfig.templateName) || whatsapp.metaCloud.defaultTemplate || 'shaurya';
+      const activeTemplateLang = (botConfig.metaCloudConfig && botConfig.metaCloudConfig.templateLang) || (botConfig.mbgConfig && botConfig.mbgConfig.templateLang) || whatsapp.metaCloud.defaultTemplateLang || 'en';
 
-      const sent = await whatsapp.sendTextMessage(1, `${cleanPhone}@s.whatsapp.net`, outreachText, {
-        useTemplate,
-        templateName: activeTemplateName,
-        templateLang: activeTemplateLang,
-        templateParams: [lead.name || 'Investor', lead.sector || 'Karnal Prime Sectors'],
-        leadName: lead.name
-      });
+      const res = await whatsapp.metaCloud.sendTemplateMessage(
+        cleanPhone,
+        activeTemplateName,
+        activeTemplateLang,
+        [lead.name || 'Investor', lead.sector || 'Karnal Prime Sectors']
+      );
 
-      if (sent) {
+      if (res && res.success) {
+        scraper.recordSentPhone(cleanPhone);
+        scraper.recordSentPhone(digits);
         scraper.updateLeadStatus(lead.phone, 'sent', null, 'meta_cloud');
         chatMemory.recordOutreach(cleanPhone, outreachText, {
           name: lead.name,
@@ -677,7 +702,16 @@ async function runMetaCloudWorker() {
         console.log(`✅ [Meta Cloud API Sent] To +${cleanPhone}. Today: ${metaCloudState.dailySentCount}/${cloudLimit}`);
       } else {
         metaCloudState.consecutiveFailures++;
-        scraper.updateLeadStatus(lead.phone, 'failed', 'Meta Cloud dispatch failed', 'meta_cloud');
+        const errMsg = String(res?.error || 'Dispatch failed');
+        if (errMsg.includes('131026') || errMsg.toLowerCase().includes('not on whatsapp') || errMsg.toLowerCase().includes('undeliverable')) {
+          console.log(`❌ [Not on WhatsApp] +${cleanPhone} does not exist on WhatsApp. Shielded.`);
+          scraper.updateLeadStatus(lead.phone, 'not_on_whatsapp', errMsg, 'meta_cloud');
+          scraper.recordSentPhone(cleanPhone);
+          scraper.recordSentPhone(digits);
+        } else {
+          console.log(`⚠️ [Meta Dispatch Failed] +${cleanPhone}: ${errMsg}. No fake count incremented.`);
+          scraper.updateLeadStatus(lead.phone, 'failed', errMsg, 'meta_cloud');
+        }
       }
     } catch (sendErr) {
       metaCloudState.consecutiveFailures++;
@@ -685,14 +719,14 @@ async function runMetaCloudWorker() {
       scraper.updateLeadStatus(lead.phone, 'failed', sendErr.message, 'meta_cloud');
     }
 
-    // 8. 14-Minute Cadence for Meta Cloud (100 msgs/day target)
-    const minDelay = botConfig.cloudMinMsgDelayMs || (13 * 60 * 1000);
-    const maxDelay = botConfig.cloudMaxMsgDelayMs || (16 * 60 * 1000);
+    // 9. 5.5-Minute Cadence for Meta Cloud (250 msgs/day target)
+    const minDelay = botConfig.cloudMinMsgDelayMs || (270 * 1000); // 4.5m
+    const maxDelay = botConfig.cloudMaxMsgDelayMs || (390 * 1000); // 6.5m
     const delayMs = Math.floor(minDelay + Math.random() * (maxDelay - minDelay));
-    const delayMins = Math.round(delayMs / 60000);
+    const delayMins = (delayMs / 60000).toFixed(1);
     metaCloudState.nextActionTime = Date.now() + delayMs;
-    metaCloudState.currentStatus = `Sent hot lead via Official Meta API! Taking ${delayMins}-min cadence break (100 msgs/day target)...`;
-    console.log(`☕ [Meta Cloud Cadence] 1 message sent via Meta API. Resting for ${delayMins} mins until ${formatIndiaTime(metaCloudState.nextActionTime)}...`);
+    metaCloudState.currentStatus = `Sent verified lead via Meta API! Next dispatch in ~${delayMins}m (250 msgs/day target)...`;
+    console.log(`☕ [Meta Cloud Cadence] 1 message sent via Meta API. Next lead at ${formatIndiaTime(metaCloudState.nextActionTime)} (~${delayMins}m break)...`);
     await sleep(delayMs);
   }
 }
