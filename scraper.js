@@ -186,70 +186,77 @@ function formatWhatsAppJid(rawNumber) {
 }
 
 /**
- * 6-Device Territory Partitioning for Karnal Realty
+ * 6-Device Territory Partitioning for Karnal Realty - High-Intent Hot Buyers Only
  */
 const TERRITORIES = {
   device_1: {
-    name: 'Karnal Commercial Spaces & SCO Plots (GT Road & Sector 12)',
-    focus: 'commercial',
-    locations: ['GT Road', 'Sector 12', 'Model Town', 'Namaste Chowk', 'Urban Estate'],
+    name: 'Karnal Prime Commercial & SCO Plots (Hot Active Buyers)',
+    focus: 'hot_commercial_sco',
+    locations: ['GT Road', 'Sector 12', 'Model Town', 'Namaste Chowk', 'Sector 8', 'Sector 9'],
     queries: [
-      '"commercial space" "karnal" "phone" OR "contact"',
-      '"SCO plot" "karnal" "phone" OR "call"',
-      '"commercial property for sale" "karnal" "contact"',
-      '"karnal sector 12" "commercial" "contact"'
+      '"looking to buy" "commercial plot" "karnal" "call" OR "whatsapp"',
+      '"want to buy" "SCO plot" "karnal" "phone" OR "contact"',
+      '"urgent requirement" "commercial plot" "karnal" "call"',
+      '"ready to invest" "commercial property" "karnal" "whatsapp"',
+      '"cash buyer" "SCO" "karnal" "phone"',
+      '"need commercial land" "karnal" "gt road" "contact"'
     ]
   },
   device_2: {
-    name: 'Karnal Retail Shops, Booths & Showrooms (Mughal Canal & High Streets)',
-    focus: 'retail',
+    name: 'Karnal Prime Retail Shops & Showrooms (Active Buyer Requirements)',
+    focus: 'hot_retail_investors',
     locations: ['Mughal Canal', 'Kunjpura Road', 'Mall Road', 'Railway Road', 'Sector 13'],
     queries: [
-      '"shop for sale" "karnal" "phone" OR "mobile"',
-      '"mughal canal" "karnal" "shop" "call" OR "phone"',
-      '"karnal showroom" "for sale" "contact"',
-      '"karnal commercial booth" "phone"'
+      '"looking to buy shop" "karnal" "phone" OR "whatsapp"',
+      '"want to buy showroom" "karnal" "contact" OR "call"',
+      '"urgent requirement" "shop" "mughal canal" "phone"',
+      '"buyer requirement" "commercial shop" "karnal" "mobile"',
+      '"ready to buy retail shop" "karnal" "whatsapp"'
     ]
   },
   device_3: {
-    name: 'Canada & North America NRIs (Ontario, BC, Alberta investors in Karnal)',
-    focus: 'nri_canada_us',
+    name: 'Canada & USA NRI Investors (Hot Buying & Investment Inquiries)',
+    focus: 'hot_nri_canada_us',
     locations: ['Brampton', 'Surrey', 'Toronto', 'Calgary', 'Vancouver', 'New York'],
     queries: [
-      'site:facebook.com ("Canada" OR "Brampton" OR "Surrey") ("Karnal property" OR "invest in Karnal") "call or whatsapp"',
-      '("NRI property investment" OR "buying property") "Karnal" ("+1" OR "Canada") "whatsapp"',
-      '"NRI" "Karnal SCO plot" "contact"'
+      'site:facebook.com ("Canada" OR "Brampton" OR "Surrey") ("looking to invest in Karnal" OR "buying plot in Karnal") "whatsapp"',
+      '("NRI looking to buy" OR "NRI buyer") "Karnal" ("+1" OR "Canada") "whatsapp"',
+      '"NRI investor" "want to buy" "Karnal SCO" "contact" OR "call"',
+      '"Canada NRI" "buying commercial property" "Karnal" "phone"'
     ]
   },
   device_4: {
-    name: 'UK & Europe NRIs (London, Birmingham, Leicester diaspora for Karnal)',
-    focus: 'nri_uk',
+    name: 'UK & Europe NRIs (Active Diaspora Investors for Karnal)',
+    focus: 'hot_nri_uk',
     locations: ['London', 'Birmingham', 'Leicester', 'Southall', 'Coventry'],
     queries: [
-      'site:facebook.com ("UK" OR "London" OR "Birmingham") ("Karnal property" OR "Karnal commercial") "whatsapp"',
-      '("NRI investment in Karnal" OR "Karnal real estate") ("+44" OR "UK") "phone"',
-      '"NRI" "commercial plots in Karnal" "call"'
+      'site:facebook.com ("UK" OR "London" OR "Birmingham") ("buying property in Karnal" OR "looking to invest in Karnal") "whatsapp"',
+      '("UK NRI" OR "London investor") "want to buy plot" "Karnal" "phone"',
+      '"NRI investor" "buying SCO plot" "Karnal" ("+44" OR "UK") "call"',
+      '"NRI buyer" "commercial plot in Karnal" "whatsapp"'
     ]
   },
   device_5: {
-    name: 'Australia & Gulf NRIs (Melbourne, Sydney, Dubai, UAE investors in Karnal)',
-    focus: 'nri_aus_uae',
+    name: 'Australia & Gulf NRIs (High-Budget Commercial Investors)',
+    focus: 'hot_nri_aus_uae',
     locations: ['Melbourne', 'Sydney', 'Brisbane', 'Dubai', 'Abu Dhabi', 'Sharjah'],
     queries: [
-      'site:facebook.com ("Australia" OR "Dubai" OR "UAE") ("Karnal plots" OR "Karnal SCO") "whatsapp"',
-      '("NRI property Karnal" OR "commercial space Karnal") ("+61" OR "+971") "phone"',
-      '"Dubai NRIs" "Karnal property investment" "contact"'
+      'site:facebook.com ("Australia" OR "Dubai" OR "UAE") ("buying plot in Karnal" OR "invest in Karnal commercial") "whatsapp"',
+      '("Dubai NRI" OR "Australia investor") "looking to buy" "Karnal" ("+61" OR "+971") "whatsapp"',
+      '"UAE investor" "want to invest in Karnal property" "contact"',
+      '"Gulf NRI" "buying commercial space" "Karnal" "phone"'
     ]
   },
   device_6: {
-    name: 'Domestic High-Net-Worth & Haryana Investors (Plots & Farmland in Karnal)',
-    focus: 'domestic_hnw',
+    name: 'High-Net-Worth Domestic Buyers (Gated Township Plots & Farmland)',
+    focus: 'hot_domestic_hnw',
     locations: ['Panipat', 'Kurukshetra', 'Ambala', 'Chandigarh', 'Delhi-NCR', 'Karnal'],
     queries: [
-      '"plot for sale in karnal" "phone" OR "whatsapp"',
-      '"karnal gated township" "plot" "contact"',
-      '"karnal farmhouse land" "sale" "phone"',
-      '"karnal bypass" "commercial land" "phone"'
+      '"looking to buy plot" "karnal" ("sector 32" OR "sector 33" OR "sector 8" OR "sector 9") "phone"',
+      '"urgent buyer" "residential plot" "karnal" "whatsapp"',
+      '"ready to buy" "plot in karnal" "contact" OR "call"',
+      '"want to buy" "CHD city" OR "Alpha city" "karnal" "phone"',
+      '"cash buyer" "farmhouse land" "karnal" "contact"'
     ]
   }
 };
@@ -257,6 +264,20 @@ const TERRITORIES = {
 function getTerritoryForAccount(accountId) {
   const key = String(accountId).startsWith('device_') ? accountId : `device_${accountId}`;
   return TERRITORIES[key] || TERRITORIES.device_1;
+}
+
+function evaluateHotLeadScore(query = '', item = {}) {
+  const combined = `${query} ${item.name || ''} ${item.segment || ''} ${item.location || ''}`.toLowerCase();
+  const highIntentKeywords = [
+    'looking to buy', 'want to buy', 'urgent requirement', 'ready to buy',
+    'cash buyer', 'investor', 'ready to invest', 'need commercial', 'buying plot',
+    'buyer requirement', 'nri investor', 'nri buyer', 'buying sco'
+  ];
+  let score = 50;
+  for (const kw of highIntentKeywords) {
+    if (combined.includes(kw)) score += 25;
+  }
+  return score;
 }
 
 function addLeadsToQueue(newLeads = [], defaultAccount = null) {
@@ -272,15 +293,20 @@ function addLeadsToQueue(newLeads = [], defaultAccount = null) {
 
     if (!existingPhones.has(formatted.cleanNumber)) {
       const assigned = item.assignedAccount || defaultAccount || null;
+      const score = evaluateHotLeadScore(item.query, item);
+      const isHot = score >= 75;
+
       db.leads.push({
         phone: formatted.cleanNumber,
         jid: formatted.jid,
         country: formatted.country || item.country || 'India',
         name: item.name || '',
-        segment: item.segment || 'Commercial & Plots',
+        segment: isHot ? '🔥 Hot Verified Buyer' : (item.segment || 'Commercial & Plots'),
         location: item.location || 'Karnal',
         source: item.source || 'karnal_realty_harvester',
         query: item.query || '',
+        isHotLead: isHot,
+        priority: score,
         assignedAccount: assigned,
         discoveredAt: new Date().toISOString(),
         status: 'queued',
@@ -302,29 +328,27 @@ function claimNextLead(deviceId) {
   const now = Date.now();
   const devKey = `device_${deviceId}`;
 
-  // 1. Check lead specifically assigned to this device
-  let lead = db.leads.find(l => {
-    if (isPhoneAlreadySent(l.phone)) return false;
-    return l.status === 'queued' && (l.assignedAccount === devKey || l.assignedAccount === String(deviceId));
-  });
+  // Filter all candidates that haven't been sent yet
+  const available = db.leads.filter(l => !isPhoneAlreadySent(l.phone));
 
-  // 2. Grab unassigned queued lead
-  if (!lead) {
-    lead = db.leads.find(l => {
-      if (isPhoneAlreadySent(l.phone)) return false;
-      return l.status === 'queued' && !l.assignedAccount;
-    });
+  // 1. Check hot leads assigned to this device slot
+  let candidates = available.filter(l => l.status === 'queued' && (l.assignedAccount === devKey || l.assignedAccount === String(deviceId)));
+
+  // 2. Fall back to any unassigned queued leads
+  if (candidates.length === 0) {
+    candidates = available.filter(l => l.status === 'queued' && !l.assignedAccount);
   }
 
-  // 3. Stalled processing lead fallback (> 15m)
-  if (!lead) {
-    lead = db.leads.find(l => {
-      if (isPhoneAlreadySent(l.phone)) return false;
-      return l.status === 'processing' && l.claimed_at && (now - l.claimed_at > 15 * 60 * 1000);
-    });
+  // 3. Stalled processing leads fallback (> 15 mins)
+  if (candidates.length === 0) {
+    candidates = available.filter(l => l.status === 'processing' && l.claimed_at && (now - l.claimed_at > 15 * 60 * 1000));
   }
 
-  if (lead) {
+  if (candidates.length > 0) {
+    // Sort strictly by priority / hot lead score descending so HOT LEADS ALWAYS DISPATCH FIRST
+    candidates.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    const lead = candidates[0];
+
     lead.status = 'processing';
     lead.claimed_by = deviceId;
     lead.claimed_at = now;

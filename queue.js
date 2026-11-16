@@ -25,23 +25,23 @@ const CONFIG_FILE = path.join(__dirname, 'bot_config.json');
 // Persistent & Customizable 24-Hour Limits & Pacing Config
 function loadBotConfig() {
   const defaults = {
-    dailyMaxLeadsPerDevice: parseInt(process.env.DAILY_MAX_LEADS_PER_DEVICE || '50', 10),
-    dailyMaxLeadsCloud: parseInt(process.env.DAILY_MAX_LEADS_CLOUD || '2000', 10),
-    cloudMinMsgDelayMs: parseInt(process.env.CLOUD_MIN_MSG_DELAY_MS || '1500', 10),
-    cloudMaxMsgDelayMs: parseInt(process.env.CLOUD_MAX_MSG_DELAY_MS || '3500', 10),
-    cloudPacingPreset: 'cloud_turbo',
+    dailyMaxLeadsPerDevice: parseInt(process.env.DAILY_MAX_LEADS_PER_DEVICE || '48', 10),
+    dailyMaxLeadsCloud: parseInt(process.env.DAILY_MAX_LEADS_CLOUD || '48', 10),
+    cloudMinMsgDelayMs: 1740000,
+    cloudMaxMsgDelayMs: 1860000,
+    cloudPacingPreset: 'ultra_stealth_30m',
     useMetaTemplate: true,
-    minMsgDelayMs: parseInt(process.env.MIN_MSG_DELAY_MS || '35000', 10),
-    maxMsgDelayMs: parseInt(process.env.MAX_MSG_DELAY_MS || '70000', 10),
-    minBreakMins: parseInt(process.env.MIN_BREAK_MINS || '5', 10),
-    maxBreakMins: parseInt(process.env.MAX_BREAK_MINS || '10', 10),
-    minBatchSize: 8,
-    maxBatchSize: 12,
+    minMsgDelayMs: 1740000,
+    maxMsgDelayMs: 1860000,
+    minBreakMins: 29,
+    maxBreakMins: 31,
+    minBatchSize: 1,
+    maxBatchSize: 1,
     businessHoursShield: false,
     specialDeviceNumber: '9416085989',
     specialDailyLimit: 10,
     vaultCode: '3369',
-    pacingPreset: 'fast',
+    pacingPreset: 'ultra_stealth_30m',
     sendBrandedImage: true
   };
 
@@ -111,7 +111,19 @@ function setDailyMaxLeadsPerDevice(count, preset = 'custom') {
 
   const updates = { dailyMaxLeadsPerDevice: num, pacingPreset: preset };
 
-  if (preset === 'turbo') {
+  if (preset === 'ultra_stealth_30m' || preset === 'stealth_48' || preset === 'ultra_human') {
+    updates.dailyMaxLeadsPerDevice = 48;
+    updates.dailyMaxLeadsCloud = 48;
+    updates.minMsgDelayMs = 1740000;
+    updates.maxMsgDelayMs = 1860000;
+    updates.minBreakMins = 29;
+    updates.maxBreakMins = 31;
+    updates.minBatchSize = 1;
+    updates.maxBatchSize = 1;
+    updates.cloudMinMsgDelayMs = 1740000;
+    updates.cloudMaxMsgDelayMs = 1860000;
+    updates.businessHoursShield = false;
+  } else if (preset === 'turbo') {
     updates.minMsgDelayMs = 25000;
     updates.maxMsgDelayMs = 45000;
     updates.minBreakMins = 3;
@@ -525,8 +537,8 @@ async function runDeviceWorker(deviceId) {
         const breakMs = getRandomBreakDurationMs();
         const breakMins = Math.round(breakMs / 60000);
         state.nextActionTime = Date.now() + breakMs;
-        state.currentStatus = `Mini-batch of ${state.currentBatchLimit} sent! Taking ${breakMins}-min natural cadence pause...`;
-        console.log(`\n☕ [Natural Micro-Batch Rest Device ${deviceId}] Batch target met (${state.currentBatchLimit} sent). Taking ${breakMins}-minute cadence pause until ${formatIndiaTime(state.nextActionTime)}...\n`);
+        state.currentStatus = `Sent hot lead outreach! Taking ${breakMins}-min stealth cadence rest (48 msgs/day target)...`;
+        console.log(`\n☕ [Stealth Human Cadence Device ${deviceId}] 1 message sent. Resting for ${breakMins} mins until ${formatIndiaTime(state.nextActionTime)} (48 msgs/day target)...\n`);
 
         await sleep(breakMs);
 
@@ -657,11 +669,14 @@ async function runMetaCloudWorker() {
       scraper.updateLeadStatus(lead.phone, 'failed', sendErr.message, 'meta_cloud');
     }
 
-    // 8. High-Speed Cloud Pacing (1.5s - 3.5s per message for 1,000+ daily volume)
-    const minDelay = botConfig.cloudMinMsgDelayMs || 1500;
-    const maxDelay = botConfig.cloudMaxMsgDelayMs || 3500;
+    // 8. 30-Minute Cadence for Meta Cloud (48 msgs/day target)
+    const minDelay = botConfig.cloudMinMsgDelayMs || (29 * 60 * 1000);
+    const maxDelay = botConfig.cloudMaxMsgDelayMs || (31 * 60 * 1000);
     const delayMs = Math.floor(minDelay + Math.random() * (maxDelay - minDelay));
+    const delayMins = Math.round(delayMs / 60000);
     metaCloudState.nextActionTime = Date.now() + delayMs;
+    metaCloudState.currentStatus = `Sent hot lead! Taking ${delayMins}-min cadence rest (48 msgs/day target)...`;
+    console.log(`☕ [Meta Cloud Cadence] 1 message sent. Resting for ${delayMins} mins until ${formatIndiaTime(metaCloudState.nextActionTime)}...`);
     await sleep(delayMs);
   }
 }

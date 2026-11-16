@@ -19,15 +19,15 @@ services:
       - key: MAX_DEVICES
         value: "6"
       - key: DAILY_MAX_LEADS_PER_DEVICE
-        value: "50"
+        value: "48"
       - key: MIN_MSG_DELAY_MS
-        value: "180000"
+        value: "1740000"
       - key: MAX_MSG_DELAY_MS
-        value: "360000"
+        value: "1860000"
       - key: MIN_BREAK_MINS
-        value: "35"
+        value: "29"
       - key: MAX_BREAK_MINS
-        value: "65"
+        value: "31"
       - key: WHATSAPP_ENGINE
         value: "meta_cloud"
       - key: META_ACCESS_TOKEN
@@ -43,4 +43,4 @@ services:
       - key: META_TEMPLATE_LANG
         value: "hi"
       - key: DAILY_MAX_LEADS_CLOUD
-        value: "2000"
+        value: "48"
