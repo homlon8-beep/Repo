@@ -36,6 +36,16 @@ let overrideEngine = null;
 
 function getActiveEngine() {
   if (overrideEngine) return overrideEngine;
+  try {
+    const cfgPath = path.join(__dirname, 'bot_config.json');
+    if (fs.existsSync(cfgPath)) {
+      const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+      if (cfg.whatsappEngine === 'meta_cloud' || cfg.whatsappEngine === 'baileys') {
+        return cfg.whatsappEngine;
+      }
+    }
+  } catch (_) {}
+
   if (process.env.WHATSAPP_ENGINE === 'meta_cloud' || (process.env.WHATSAPP_ENGINE !== 'baileys' && metaCloud.isConfigured())) {
     return 'meta_cloud';
   }
@@ -45,6 +55,15 @@ function getActiveEngine() {
 function setEngine(engine) {
   if (engine === 'meta_cloud' || engine === 'baileys' || engine === null) {
     overrideEngine = engine;
+    try {
+      const cfgPath = path.join(__dirname, 'bot_config.json');
+      let current = {};
+      if (fs.existsSync(cfgPath)) {
+        current = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+      }
+      current.whatsappEngine = engine || 'baileys';
+      fs.writeFileSync(cfgPath, JSON.stringify(current, null, 2), 'utf8');
+    } catch (_) {}
     console.log(`🔄 [Engine Switched] Active WhatsApp Engine set to: ${getActiveEngine()}`);
     return getActiveEngine();
   }

@@ -639,10 +639,14 @@ async function runMetaCloudWorker() {
     metaCloudState.currentStatus = `Sending Cloud API message to +${cleanPhone}...`;
     let sendSucceeded = false;
     try {
+      const activeTemplateName = (botConfig.metaCloudConfig && botConfig.metaCloudConfig.templateName) || process.env.META_TEMPLATE_NAME || whatsapp.metaCloud.defaultTemplate;
+      const activeTemplateLang = (botConfig.metaCloudConfig && botConfig.metaCloudConfig.templateLang) || process.env.META_TEMPLATE_LANG || whatsapp.metaCloud.defaultTemplateLang || 'hi';
+      const useTemplate = Boolean(botConfig.useMetaTemplate && activeTemplateName);
+
       const sent = await whatsapp.sendTextMessage(1, `${cleanPhone}@s.whatsapp.net`, outreachText, {
-        useTemplate: Boolean(botConfig.useMetaTemplate && process.env.META_TEMPLATE_NAME),
-        templateName: process.env.META_TEMPLATE_NAME,
-        templateLang: process.env.META_TEMPLATE_LANG || 'hi',
+        useTemplate,
+        templateName: activeTemplateName,
+        templateLang: activeTemplateLang,
         templateParams: [lead.name || 'Investor', lead.sector || 'Karnal Prime Sectors'],
         leadName: lead.name
       });

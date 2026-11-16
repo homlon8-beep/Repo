@@ -15,6 +15,8 @@
  */
 
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 const META_API_VERSION = process.env.META_API_VERSION || 'v21.0';
 const GRAPH_BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`;
@@ -24,7 +26,7 @@ class MetaCloudWhatsApp {
     this.accessToken = process.env.META_ACCESS_TOKEN || '';
     this.phoneNumberId = process.env.META_PHONE_NUMBER_ID || '';
     this.wabaId = process.env.META_WABA_ID || '';
-    this.verifyToken = process.env.META_VERIFY_TOKEN || 'karnal_realty_meta_verify_2026';
+    this.verifyToken = process.env.META_VERIFY_TOKEN || 'satyam_karnal_webhook_2026';
     this.appSecret = process.env.META_APP_SECRET || '';
     this.defaultTemplate = process.env.META_TEMPLATE_NAME || 'karnal_property_lead_v1';
     this.defaultTemplateLang = process.env.META_TEMPLATE_LANG || 'hi';
@@ -38,19 +40,85 @@ class MetaCloudWhatsApp {
       verifiedName: '',
       lastChecked: null
     };
+
+    this.reloadConfig();
   }
 
   /**
-   * Reload configuration from environment variables or custom params
+   * Reload configuration from bot_config.json or environment variables
    */
   reloadConfig() {
-    this.accessToken = process.env.META_ACCESS_TOKEN || this.accessToken;
-    this.phoneNumberId = process.env.META_PHONE_NUMBER_ID || this.phoneNumberId;
-    this.wabaId = process.env.META_WABA_ID || this.wabaId;
-    this.verifyToken = process.env.META_VERIFY_TOKEN || this.verifyToken;
-    this.appSecret = process.env.META_APP_SECRET || this.appSecret;
-    this.defaultTemplate = process.env.META_TEMPLATE_NAME || this.defaultTemplate;
-    this.defaultTemplateLang = process.env.META_TEMPLATE_LANG || this.defaultTemplateLang;
+    let saved = {};
+    try {
+      const cfgPath = path.join(__dirname, 'bot_config.json');
+      if (fs.existsSync(cfgPath)) {
+        const raw = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+        if (raw.metaCloudConfig) saved = raw.metaCloudConfig;
+      }
+    } catch (_) {}
+
+    this.accessToken = saved.accessToken || process.env.META_ACCESS_TOKEN || this.accessToken || '';
+    this.phoneNumberId = saved.phoneNumberId || process.env.META_PHONE_NUMBER_ID || this.phoneNumberId || '';
+    this.wabaId = saved.wabaId || process.env.META_WABA_ID || this.wabaId || '';
+    this.verifyToken = saved.verifyToken || process.env.META_VERIFY_TOKEN || this.verifyToken || 'satyam_karnal_webhook_2026';
+    this.appSecret = saved.appSecret || process.env.META_APP_SECRET || this.appSecret || '';
+    this.defaultTemplate = saved.templateName || saved.defaultTemplate || process.env.META_TEMPLATE_NAME || this.defaultTemplate || 'karnal_property_lead_v1';
+    this.defaultTemplateLang = saved.templateLang || saved.defaultTemplateLang || process.env.META_TEMPLATE_LANG || this.defaultTemplateLang || 'hi';
+  }
+
+  /**
+   * Save updated credentials to bot_config.json
+   */
+  saveConfig(newConfig = {}) {
+    const cfgPath = path.join(__dirname, 'bot_config.json');
+    let current = {};
+    try {
+      if (fs.existsSync(cfgPath)) {
+        current = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+      }
+    } catch (_) {}
+
+    const incomingToken = newConfig.accessToken !== undefined ? String(newConfig.accessToken).trim() : '';
+    // If incoming token is empty or masked (e.g. EAAG...abc), preserve existing token if unchanged
+    let tokenToSave = incomingToken;
+    if (!tokenToSave || tokenToSave.includes('...')) {
+      tokenToSave = (current.metaCloudConfig && current.metaCloudConfig.accessToken) || this.accessToken || '';
+    }
+
+    current.metaCloudConfig = {
+      accessToken: tokenToSave,
+      phoneNumberId: newConfig.phoneNumberId !== undefined ? String(newConfig.phoneNumberId).trim() : (this.phoneNumberId || ''),
+      wabaId: newConfig.wabaId !== undefined ? String(newConfig.wabaId).trim() : (this.wabaId || ''),
+      verifyToken: newConfig.verifyToken !== undefined && String(newConfig.verifyToken).trim() ? String(newConfig.verifyToken).trim() : (this.verifyToken || 'satyam_karnal_webhook_2026'),
+      appSecret: newConfig.appSecret !== undefined ? String(newConfig.appSecret).trim() : (this.appSecret || ''),
+      templateName: newConfig.templateName !== undefined && String(newConfig.templateName).trim() ? String(newConfig.templateName).trim() : (this.defaultTemplate || 'karnal_property_lead_v1'),
+      templateLang: newConfig.templateLang !== undefined && String(newConfig.templateLang).trim() ? String(newConfig.templateLang).trim() : (this.defaultTemplateLang || 'hi')
+    };
+
+    if (newConfig.activateEngine) {
+      current.whatsappEngine = 'meta_cloud';
+    }
+
+    fs.writeFileSync(cfgPath, JSON.stringify(current, null, 2), 'utf8');
+    this.reloadConfig();
+    return current.metaCloudConfig;
+  }
+
+  /**
+   * Return safe representation of current configuration for dashboard display
+   */
+  getConfig() {
+    this.reloadConfig();
+    return {
+      hasAccessToken: Boolean(this.accessToken),
+      accessTokenMasked: this.accessToken ? `${this.accessToken.substring(0, 10)}...${this.accessToken.slice(-6)}` : '',
+      phoneNumberId: this.phoneNumberId || '',
+      wabaId: this.wabaId || '',
+      verifyToken: this.verifyToken || 'satyam_karnal_webhook_2026',
+      appSecretMasked: this.appSecret ? '••••••••' : '',
+      templateName: this.defaultTemplate || 'karnal_property_lead_v1',
+      templateLang: this.defaultTemplateLang || 'hi'
+    };
   }
 
   /**

@@ -270,6 +270,12 @@ app.get('/', (req, res) => {
   const currentSent = state.dailySentCount || 0;
   const progressPct = Math.min(100, Math.round((currentSent / Math.max(1, dailyTarget)) * 100));
 
+  const metaCfg = (whatsapp.metaCloud && whatsapp.metaCloud.getConfig) ? whatsapp.metaCloud.getConfig() : {};
+  const isMetaConfigured = (whatsapp.metaCloud && whatsapp.metaCloud.isConfigured) ? whatsapp.metaCloud.isConfigured() : false;
+  const publicBaseUrl = detectedBaseUrl || `${req.protocol}://${req.get('host')}`;
+  const webhookCallbackUrl = `${publicBaseUrl}/api/meta/webhook`;
+  const metaVerifyToken = (whatsapp.metaCloud && whatsapp.metaCloud.verifyToken) || 'satyam_karnal_webhook_2026';
+
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -665,6 +671,9 @@ app.get('/', (req, res) => {
               <span class="pulse-dot"></span>
               ${isMetaCloud ? 'Meta Cloud API v21.0 Active (2,000/Day)' : 'Baileys Multi-Device Active'}
             </span>
+            <button type="button" onclick="scrollToMetaSetup()" class="btn btn-gold" style="font-size: 0.78rem; padding: 0.45rem 0.85rem;" title="Configure official Meta WhatsApp Cloud API credentials">
+              ⚙️ Meta Bot Setup
+            </button>
             <form method="POST" action="/api/settings/engine" style="margin:0;">
               <input type="hidden" name="engine" value="${isMetaCloud ? 'baileys' : 'meta_cloud'}">
               <button type="submit" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.45rem 0.85rem;">
@@ -820,6 +829,157 @@ app.get('/', (req, res) => {
                 <input type="text" id="manualMsgInput" placeholder="Type a message to this lead via Meta Cloud API..." disabled />
                 <button type="submit" id="btnSendManual" class="btn btn-wa" disabled>Send ⚡</button>
               </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Official Meta WhatsApp Cloud API Setup & Number Manager -->
+        <div id="metaSetupSection" class="control-card" style="border: 1px solid ${isMetaConfigured ? '#10b981' : '#f59e0b'}; background: linear-gradient(180deg, #0d1524 0%, #08111d 100%);">
+          <div class="control-title" style="padding-bottom: 0.85rem; border-bottom: 1px solid var(--panel-border); margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.4rem;">🌐</span>
+              <div>
+                <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">Official Meta WhatsApp Cloud API Manager</div>
+                <div style="font-size: 0.76rem; color: var(--text-muted); font-weight: normal;">Enterprise Facebook Graph API v21.0 • 100% Ban-Proof • Official Phone Number Bot</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+              <span id="metaStatusPill" style="font-size: 0.75rem; padding: 0.3rem 0.75rem; border-radius: 9999px; font-weight: 700; ${isMetaConfigured ? 'background: rgba(37, 211, 102, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4);' : 'background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);'}">
+                ${isMetaConfigured ? '🟢 Meta Cloud Connected' : '🟡 Setup Required'}
+              </span>
+              <button type="button" onclick="testMetaHealth()" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+                🔍 Check Health &amp; Tier
+              </button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+            <!-- Column 1: Meta Cloud Credentials Form -->
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                <h3 style="font-size: 0.88rem; color: var(--gold-glow); font-weight: 700;">1. Meta Cloud API Credentials</h3>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">From Meta Developer Dashboard</span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div>
+                  <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">
+                    System User Permanent Access Token <span style="color:#ef4444;">*</span>
+                  </label>
+                  <div style="display: flex; gap: 0.4rem;">
+                    <input type="password" id="metaTokenInput" value="${metaCfg.hasAccessToken ? 'KEEP_EXISTING_TOKEN' : ''}" placeholder="EAAG... (Paste permanent token from System Users)" style="flex:1; background: var(--bg-dark); border: 1px solid var(--panel-border); border-radius: 8px; color: #fff; padding: 0.55rem 0.75rem; font-size: 0.82rem; font-family: monospace;" />
+                    <button type="button" onclick="toggleTokenVisibility()" class="btn btn-outline" style="padding: 0.55rem 0.75rem; font-size: 0.75rem;" title="Show / Hide Token">👁️</button>
+                  </div>
+                  <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem;">
+                    ${metaCfg.hasAccessToken ? 'Current Token: <code style="color:#4ade80;">' + metaCfg.accessTokenMasked + '</code> (Leave as-is to keep unchanged)' : 'Generate in Meta Business Settings → System Users (Permissions: whatsapp_business_messaging, whatsapp_business_management)'}
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">
+                      Phone Number ID <span style="color:#ef4444;">*</span>
+                    </label>
+                    <input type="text" id="metaPhoneIdInput" value="${metaCfg.phoneNumberId || ''}" placeholder="e.g. 104829104857201" style="width: 100%; background: var(--bg-dark); border: 1px solid var(--panel-border); border-radius: 8px; color: #fff; padding: 0.55rem 0.75rem; font-size: 0.82rem; font-family: monospace;" />
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">
+                      WABA Account ID
+                    </label>
+                    <input type="text" id="metaWabaIdInput" value="${metaCfg.wabaId || ''}" placeholder="e.g. 102948201948572" style="width: 100%; background: var(--bg-dark); border: 1px solid var(--panel-border); border-radius: 8px; color: #fff; padding: 0.55rem 0.75rem; font-size: 0.82rem; font-family: monospace;" />
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">
+                      Pre-Approved Template Name
+                    </label>
+                    <input type="text" id="metaTemplateInput" value="${metaCfg.templateName || 'karnal_property_lead_v1'}" placeholder="karnal_property_lead_v1" style="width: 100%; background: var(--bg-dark); border: 1px solid var(--panel-border); border-radius: 8px; color: #fff; padding: 0.55rem 0.75rem; font-size: 0.82rem; font-family: monospace;" />
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">
+                      Language
+                    </label>
+                    <input type="text" id="metaTemplateLangInput" value="${metaCfg.templateLang || 'hi'}" placeholder="hi" style="width: 100%; background: var(--bg-dark); border: 1px solid var(--panel-border); border-radius: 8px; color: #fff; padding: 0.55rem 0.75rem; font-size: 0.82rem; font-family: monospace;" />
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                  <input type="checkbox" id="chkActivateEngine" ${isMetaCloud ? 'checked' : ''} style="cursor: pointer; width: 16px; height: 16px;" />
+                  <label for="chkActivateEngine" style="font-size: 0.8rem; color: #cbd5e1; cursor: pointer;">
+                    Set Official Meta WhatsApp Cloud as Active Engine
+                  </label>
+                </div>
+
+                <div style="display: flex; gap: 0.6rem; margin-top: 0.5rem;">
+                  <button type="button" onclick="saveMetaConfig()" class="btn btn-wa" style="flex:1; justify-content: center; font-size: 0.82rem;">
+                    💾 Save &amp; Connect Meta Bot
+                  </button>
+                  <button type="button" onclick="testMetaHealth()" class="btn btn-gold" style="font-size: 0.82rem;">
+                    🔍 Test API
+                  </button>
+                </div>
+
+                <div id="metaFeedbackBox" style="display:none; padding: 0.65rem 0.85rem; border-radius: 8px; font-size: 0.78rem; margin-top: 0.5rem;"></div>
+              </div>
+            </div>
+
+            <!-- Column 2: Webhook Callback Details & Number Uploading Instructions -->
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                <h3 style="font-size: 0.88rem; color: #38bdf8; font-weight: 700;">2. Webhook Setup &amp; Number Onboarding</h3>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">Paste in Meta Portal</span>
+              </div>
+
+              <!-- Webhook Box -->
+              <div style="background: var(--bg-dark); border: 1px solid var(--panel-border); border-radius: 8px; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.6rem;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                    <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">CALLBACK URL:</span>
+                    <button type="button" onclick="copyText('${webhookCallbackUrl}', this)" class="btn btn-outline" style="font-size: 0.68rem; padding: 0.15rem 0.5rem;">📋 Copy</button>
+                  </div>
+                  <input type="text" readonly value="${webhookCallbackUrl}" style="width: 100%; background: #070b12; border: 1px solid #1e293b; border-radius: 6px; color: #38bdf8; padding: 0.4rem 0.6rem; font-size: 0.76rem; font-family: monospace;" />
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                    <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">VERIFY TOKEN:</span>
+                    <button type="button" onclick="copyText('${metaVerifyToken}', this)" class="btn btn-outline" style="font-size: 0.68rem; padding: 0.15rem 0.5rem;">📋 Copy</button>
+                  </div>
+                  <input type="text" readonly value="${metaVerifyToken}" style="width: 100%; background: #070b12; border: 1px solid #1e293b; border-radius: 6px; color: #f59e0b; padding: 0.4rem 0.6rem; font-size: 0.76rem; font-family: monospace;" />
+                </div>
+
+                <div style="font-size: 0.72rem; color: var(--text-muted); background: rgba(56, 189, 248, 0.08); padding: 0.45rem 0.65rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2);">
+                  🔔 <strong>Webhook Event Subscription:</strong> Subscribe to <code style="color:#fff;">messages</code> in Meta Dashboard to capture incoming inquiries, buttons &amp; delivery ticks!
+                </div>
+              </div>
+
+              <!-- Quick Step Guide -->
+              <div style="margin-top: 0.85rem; font-size: 0.76rem; color: #cbd5e1; line-height: 1.5; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px; padding: 0.75rem;">
+                <div style="color: var(--gold-glow); font-weight: 700; margin-bottom: 0.35rem;">🚀 How to Make Any Phone Number an Official Bot:</div>
+                <ol style="margin-left: 1.2rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                  <li>Open <a href="https://developers.facebook.com/apps" target="_blank" style="color: #38bdf8; text-decoration: underline;">developers.facebook.com/apps</a> → Create App → Select <strong>Business</strong>.</li>
+                  <li>Click <strong>Set Up WhatsApp</strong> → Navigate to <strong>API Setup</strong>.</li>
+                  <li>In <strong>Step 5 (Add a phone number)</strong>, enter your desired WhatsApp number (must not be active on regular WhatsApp; if it is, delete the account in WA settings first).</li>
+                  <li>Verify via 6-digit OTP SMS or Call. Once verified, copy your <strong>Phone Number ID</strong> and <strong>WABA ID</strong> into this dashboard!</li>
+                  <li>In <strong>WhatsApp → Configuration</strong>, paste the Callback URL and Verify Token above, then click <strong>Verify and Save</strong>. Under Webhook fields, manage and subscribe to <strong>messages</strong>.</li>
+                  <li>Paste your Permanent System User Token above and hit <strong>Save &amp; Connect</strong>. Done! Your number is now an official WhatsApp Cloud API Bot with zero ban risk!</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Test Message Bar -->
+          <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid var(--panel-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+              <span>🧪 <strong>Send Quick Test Message:</strong></span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex: 1; max-width: 600px;">
+              <input type="text" id="metaTestPhone" placeholder="Enter recipient phone (e.g. 919416085989)" style="flex: 1; background: var(--bg-dark); border: 1px solid var(--panel-border); border-radius: 8px; color: #fff; padding: 0.45rem 0.75rem; font-size: 0.82rem;" />
+              <button type="button" onclick="sendMetaTestMsg()" class="btn btn-gold" style="font-size: 0.78rem; padding: 0.45rem 0.95rem; white-space: nowrap;">
+                ⚡ Send Test WhatsApp
+              </button>
             </div>
           </div>
         </div>
@@ -1122,6 +1282,176 @@ app.get('/', (req, res) => {
             .replace(/'/g, '&#039;');
         }
 
+        function scrollToMetaSetup() {
+          const sec = document.getElementById('metaSetupSection');
+          if (sec) {
+            sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            sec.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
+            sec.style.borderColor = '#fbbf24';
+            sec.style.boxShadow = '0 0 25px rgba(251, 191, 36, 0.35)';
+            setTimeout(() => {
+              sec.style.borderColor = '';
+              sec.style.boxShadow = '';
+            }, 2000);
+          }
+        }
+
+        function copyText(val, btn) {
+          if (!val) return;
+          navigator.clipboard.writeText(val).then(() => {
+            const orig = btn.innerText;
+            btn.innerText = '✓ Copied!';
+            btn.style.color = '#4ade80';
+            setTimeout(() => {
+              btn.innerText = orig;
+              btn.style.color = '';
+            }, 1800);
+          }).catch(() => {
+            const temp = document.createElement('textarea');
+            temp.value = val;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            const orig = btn.innerText;
+            btn.innerText = '✓ Copied!';
+            setTimeout(() => { btn.innerText = orig; }, 1800);
+          });
+        }
+
+        function toggleTokenVisibility() {
+          const input = document.getElementById('metaTokenInput');
+          if (input.type === 'password') {
+            input.type = 'text';
+          } else {
+            input.type = 'password';
+          }
+        }
+
+        async function saveMetaConfig() {
+          const box = document.getElementById('metaFeedbackBox');
+          const token = (document.getElementById('metaTokenInput').value || '').trim();
+          const phoneId = (document.getElementById('metaPhoneIdInput').value || '').trim();
+          const wabaId = (document.getElementById('metaWabaIdInput').value || '').trim();
+          const templateName = (document.getElementById('metaTemplateInput').value || '').trim();
+          const templateLang = (document.getElementById('metaTemplateLangInput').value || '').trim();
+          const activateEngine = document.getElementById('chkActivateEngine').checked;
+
+          box.style.display = 'block';
+          box.style.background = 'rgba(56, 189, 248, 0.12)';
+          box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+          box.style.color = '#38bdf8';
+          box.innerHTML = '⏳ Saving credentials and verifying with Meta Graph API...';
+
+          try {
+            const res = await fetch('/api/meta/save-config', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                accessToken: token === 'KEEP_EXISTING_TOKEN' ? '' : token,
+                phoneNumberId: phoneId,
+                wabaId: wabaId,
+                templateName: templateName,
+                templateLang: templateLang,
+                activateEngine: activateEngine
+              })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+              const h = data.health || {};
+              if (h.healthy) {
+                box.style.background = 'rgba(37, 211, 102, 0.15)';
+                box.style.border = '1px solid rgba(74, 222, 128, 0.4)';
+                box.style.color = '#4ade80';
+                box.innerHTML = '✅ <strong>Connected to Meta!</strong> Verified Name: <strong>' + (h.verifiedName || 'Karnal Realty') + '</strong> (' + (h.displayPhoneNumber || 'Active') + ') • Quality: <strong>' + (h.qualityRating || 'GREEN') + '</strong> • Tier: <strong>' + (h.tier || 'TIER_2K') + '</strong>';
+                document.getElementById('metaStatusPill').innerText = '🟢 Meta Cloud Connected';
+                document.getElementById('metaStatusPill').style.color = '#4ade80';
+              } else {
+                box.style.background = 'rgba(245, 158, 11, 0.15)';
+                box.style.border = '1px solid rgba(245, 158, 11, 0.4)';
+                box.style.color = '#fbbf24';
+                box.innerHTML = '⚠️ <strong>Saved, but Meta returned a warning:</strong> ' + escapeHtml(h.error || 'Check Phone ID or Token permissions');
+              }
+            } else {
+              box.style.background = 'rgba(239, 68, 68, 0.15)';
+              box.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+              box.style.color = '#f87171';
+              box.innerHTML = '❌ <strong>Error:</strong> ' + escapeHtml(data.error || 'Failed to save');
+            }
+          } catch (err) {
+            box.style.background = 'rgba(239, 68, 68, 0.15)';
+            box.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+            box.style.color = '#f87171';
+            box.innerHTML = '❌ <strong>Network Error:</strong> ' + escapeHtml(err.message);
+          }
+        }
+
+        async function testMetaHealth() {
+          const box = document.getElementById('metaFeedbackBox');
+          box.style.display = 'block';
+          box.style.background = 'rgba(56, 189, 248, 0.12)';
+          box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+          box.style.color = '#38bdf8';
+          box.innerHTML = '⏳ Probing Meta Graph API for account health and messaging tier...';
+
+          try {
+            const res = await fetch('/api/meta/verify');
+            const data = await res.json();
+            const h = data.health || {};
+            if (h.healthy) {
+              box.style.background = 'rgba(37, 211, 102, 0.15)';
+              box.style.border = '1px solid rgba(74, 222, 128, 0.4)';
+              box.style.color = '#4ade80';
+              box.innerHTML = '🟢 <strong>Meta Cloud Online:</strong> Verified Name: <strong>' + (h.verifiedName || 'Karnal Realty') + '</strong> (' + (h.displayPhoneNumber || 'Active') + ') • Quality: <strong>' + (h.qualityRating || 'GREEN') + '</strong> • Limit: <strong>' + (h.tier || '2,000/24h') + '</strong>';
+            } else {
+              box.style.background = 'rgba(239, 68, 68, 0.15)';
+              box.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+              box.style.color = '#f87171';
+              box.innerHTML = '⚠️ <strong>Meta API Response:</strong> ' + escapeHtml(h.error || h.message || 'Not configured yet.');
+            }
+          } catch (err) {
+            box.style.background = 'rgba(239, 68, 68, 0.15)';
+            box.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+            box.style.color = '#f87171';
+            box.innerHTML = '❌ <strong>Failed to check Meta:</strong> ' + escapeHtml(err.message);
+          }
+        }
+
+        async function sendMetaTestMsg() {
+          const phoneInput = document.getElementById('metaTestPhone');
+          const phone = (phoneInput.value || '').trim();
+          if (!phone) {
+            alert('Please enter a test phone number with country code (e.g. 919416085989)');
+            return;
+          }
+
+          const btn = event.currentTarget || event.target;
+          const orig = btn.innerText;
+          btn.innerText = '⏳ Sending...';
+          btn.disabled = true;
+
+          try {
+            const res = await fetch('/api/meta/test-send', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone })
+            });
+            const data = await res.json();
+            if (data.success) {
+              alert('✅ Success! Test message sent to +' + phone + ' via official Meta Cloud API!');
+              phoneInput.value = '';
+            } else {
+              alert('❌ Dispatch Failed: ' + (data.error || 'Meta Cloud reported an error.'));
+            }
+          } catch (e) {
+            alert('❌ Network Error: ' + e.message);
+          } finally {
+            btn.innerText = orig;
+            btn.disabled = false;
+          }
+        }
+
         // Start real-time polling immediately
         fetchLiveTelemetry();
         setInterval(fetchLiveTelemetry, 3500);
@@ -1385,11 +1715,65 @@ app.get('/api/meta/status', async (req, res) => {
     res.json({
       activeEngine: whatsapp.getActiveEngine(),
       metaCloud: health,
-      webhookUrl: `${detectedBaseUrl || ''}/api/meta/webhook`,
+      webhookUrl: `${detectedBaseUrl || (req.protocol + '://' + req.get('host'))}/api/meta/webhook`,
       verifyToken: whatsapp.metaCloud.verifyToken
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Meta Cloud API Save & Verify Configuration Endpoint
+ */
+app.post('/api/meta/save-config', async (req, res) => {
+  try {
+    const { accessToken, phoneNumberId, wabaId, verifyToken, appSecret, templateName, templateLang, activateEngine } = req.body;
+
+    const saved = whatsapp.metaCloud.saveConfig({
+      accessToken,
+      phoneNumberId,
+      wabaId,
+      verifyToken,
+      appSecret,
+      templateName,
+      templateLang,
+      activateEngine: (activateEngine === true || activateEngine === 'true')
+    });
+
+    if (activateEngine === true || activateEngine === 'true') {
+      whatsapp.setEngine('meta_cloud');
+    }
+
+    const health = await whatsapp.metaCloud.getAccountHealthAndTier();
+
+    res.json({
+      success: true,
+      message: 'Meta Cloud credentials saved and updated successfully!',
+      activeEngine: whatsapp.getActiveEngine(),
+      health,
+      config: whatsapp.metaCloud.getConfig()
+    });
+  } catch (err) {
+    console.error('❌ [Save Meta Config Error]:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Meta Cloud API Verification & Health Check Endpoint
+ */
+app.get('/api/meta/verify', async (req, res) => {
+  try {
+    const health = await whatsapp.metaCloud.getAccountHealthAndTier();
+    res.json({
+      success: true,
+      activeEngine: whatsapp.getActiveEngine(),
+      health,
+      config: whatsapp.metaCloud.getConfig()
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -1400,6 +1784,8 @@ app.post('/api/meta/test-send', async (req, res) => {
   const targetPhone = req.body.phone;
   const messageText = req.body.text || 'Namaste! Yeh Karnal Realty Advisors ka Official Meta Cloud API test message hai. (2,000+ msgs/day tier active)';
   const useTemplate = req.body.useTemplate === 'true' || req.body.useTemplate === true;
+  const tName = req.body.templateName || (whatsapp.metaCloud && whatsapp.metaCloud.defaultTemplate) || process.env.META_TEMPLATE_NAME || 'karnal_property_lead_v1';
+  const tLang = req.body.templateLang || (whatsapp.metaCloud && whatsapp.metaCloud.defaultTemplateLang) || process.env.META_TEMPLATE_LANG || 'hi';
 
   if (!targetPhone) {
     return res.status(400).json({ success: false, error: 'Recipient phone number is required.' });
@@ -1410,8 +1796,8 @@ app.post('/api/meta/test-send', async (req, res) => {
     if (useTemplate) {
       result = await whatsapp.metaCloud.sendTemplateMessage(
         targetPhone,
-        process.env.META_TEMPLATE_NAME || 'karnal_property_lead_v1',
-        process.env.META_TEMPLATE_LANG || 'hi',
+        tName,
+        tLang,
         [req.body.name || 'Valued Investor', req.body.sector || 'Sector 32/33 Karnal']
       );
     } else {
