@@ -603,6 +603,10 @@ function addStealthHashBypasser(text) {
  * Initialize all device slots (Device 1 immediately + existing paired devices; rest on-demand)
  */
 async function initAllDevices(onReadyCallback) {
+  if (getActiveEngine() === 'meta_cloud') {
+    console.log(`☁️ [Multi-Device Manager] Active engine is Meta Cloud API (+91 8901849699). Baileys QR sockets skipped.`);
+    return;
+  }
   console.log(`🌐 [Multi-Device Manager] Fast-booting WhatsApp engine for Karnal Realty...`);
   // Initialize Device 1 immediately
   try {

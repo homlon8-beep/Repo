@@ -85,173 +85,10 @@ app.get('/healthz', (req, res) => res.status(200).send('OK'));
 app.get('/ping', (req, res) => res.status(200).send('pong'));
 
 /**
- * Multi-Device QR Linking Page (/qr?device=X)
+ * Official Meta WhatsApp Cloud Redirect (/qr)
  */
 app.get('/qr', (req, res) => {
-  const selectedId = parseInt(req.query.device || '1', 10);
-  const clampedId = Math.max(1, Math.min(whatsapp.MAX_DEVICES, selectedId));
-  let device = whatsapp.getDevice(clampedId);
-
-  if (!device || (!device.sock && !device.isConnected)) {
-    whatsapp.initDevice(clampedId);
-    device = whatsapp.getDevice(clampedId);
-  }
-
-  const allDevices = whatsapp.getAllDevices();
-  const isConnected = device ? device.isConnected : false;
-  const phone = device ? device.phone : null;
-  const qrDataUrl = device ? device.qrDataUrl : null;
-
-  let bodyContent = '';
-
-  if (isConnected) {
-    bodyContent = `
-      <div class="card connected">
-        <div class="icon">🏢</div>
-        <h2>Device ${clampedId} Active &amp; Ready!</h2>
-        <p class="phone">+${phone}</p>
-        <p class="desc">Connected to Karnal Realty Advisors property desk (50 leads/day Enterprise Delivery Cadence).</p>
-        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-          <a href="/" class="btn btn-gold">Go to Live Dashboard</a>
-          <form method="POST" action="/api/devices/${clampedId}/logout" style="margin: 0;">
-            <button type="submit" class="btn btn-red" onclick="return confirm('Disconnect Device ${clampedId}?');">🔌 Disconnect / Relink</button>
-          </form>
-        </div>
-      </div>
-    `;
-  } else if (qrDataUrl) {
-    bodyContent = `
-      <div class="card" id="qr-container">
-        <h2>Link Device ${clampedId}</h2>
-        <p class="subtitle">Open WhatsApp on Phone ${clampedId} > Linked Devices > Link a Device</p>
-        <div class="qr-box">
-          <img src="${qrDataUrl}" alt="WhatsApp QR Code for Device ${clampedId}" class="qr-img" id="qr-img-tag" />
-        </div>
-        <p class="refresh-hint">⚡ Live QR Stream Active. Point phone camera now.</p>
-        <div style="margin-top: 1rem;">
-          <form method="POST" action="/api/devices/${clampedId}/reset" style="margin: 0;">
-            <button type="submit" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">⚡ Force Fresh QR (1s Reset)</button>
-          </form>
-        </div>
-      </div>
-    `;
-  } else {
-    bodyContent = `
-      <div class="card" id="qr-container">
-        <div class="spinner"></div>
-        <h2>Initializing Device ${clampedId} Socket...</h2>
-        <p class="desc">Generating fresh QR code with Windows 11 Chrome fingerprint (ready in 1-2s)...</p>
-        <div style="margin-top: 1.25rem;">
-          <form method="POST" action="/api/devices/${clampedId}/reset" style="margin: 0;">
-            <button type="submit" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">⚡ Force Fresh QR (1s Reset)</button>
-          </form>
-        </div>
-      </div>
-    `;
-  }
-
-  // Device Tabs Bar
-  const tabsHtml = allDevices.map(d => {
-    const isCurrent = d.id === clampedId;
-    const label = d.isConnected ? `Device ${d.id} (● +${d.phone ? d.phone.slice(-4) : 'OK'})` : `Device ${d.id} (📱 Link)`;
-    const bgClass = d.isConnected ? 'tab-online' : 'tab-offline';
-    const activeClass = isCurrent ? 'tab-active' : '';
-    return `<a href="/qr?device=${d.id}" class="tab-btn ${bgClass} ${activeClass}">${label}</a>`;
-  }).join('');
-
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Link WhatsApp Devices — Karnal Realty Advisors</title>
-      <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: #070b14; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; }
-        .wrapper { max-width: 540px; width: 100%; text-align: center; }
-        .header-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .back-link { color: #f59e0b; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
-        .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.5rem; }
-        .tab-btn { padding: 0.65rem 0.5rem; border-radius: 10px; text-decoration: none; font-size: 0.8rem; font-weight: 700; border: 1px solid #1e293b; background: #0f172a; color: #94a3b8; transition: all 0.2s; }
-        .tab-btn.tab-online { border-color: #10b981; color: #6ee7b7; background: #064e3b33; }
-        .tab-btn.tab-active { border-color: #f59e0b; background: #b4530933; color: #fbbf24; }
-        .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; padding: 2.25rem 1.75rem; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
-        .card.connected { border-color: #10b981; }
-        h2 { font-size: 1.4rem; margin-bottom: 0.4rem; color: #f8fafc; }
-        .subtitle { color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.25rem; }
-        .qr-box { background: #fff; padding: 1rem; border-radius: 16px; display: inline-block; margin-bottom: 1.25rem; }
-        .qr-img { width: 240px; height: 240px; display: block; }
-        .phone { font-size: 1.25rem; font-weight: 700; color: #34d399; margin: 0.5rem 0 1rem; }
-        .desc { color: #94a3b8; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem; }
-        .btn { display: inline-block; padding: 0.65rem 1.25rem; border-radius: 8px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; font-size: 0.9rem; }
-        .btn-gold { background: #f59e0b; color: #000; font-weight: 700; }
-        .btn-red { background: #dc2626; color: #fff; }
-        .btn-outline { background: transparent; border: 1px solid #334155; color: #cbd5e1; }
-        .refresh-hint { font-size: 0.8rem; color: #64748b; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #1e293b; border-top-color: #f59e0b; border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 1.25rem; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-      </style>
-      <script>
-        let currentConnected = ${isConnected ? 'true' : 'false'};
-        let lastQrData = "${qrDataUrl || ''}";
-
-        async function pollQrStream() {
-          try {
-            const res = await fetch('/api/devices/${clampedId}/qr-status');
-            const data = await res.json();
-
-            if (data.isConnected && !currentConnected) {
-              window.location.reload();
-              return;
-            }
-
-            if (!data.isConnected && data.qrDataUrl && data.qrDataUrl !== lastQrData) {
-              lastQrData = data.qrDataUrl;
-              const imgTag = document.getElementById('qr-img-tag');
-              if (imgTag) {
-                imgTag.src = data.qrDataUrl;
-              } else {
-                const container = document.getElementById('qr-container');
-                if (container) {
-                  container.innerHTML = \`
-                    <h2>Link Device ${clampedId}</h2>
-                    <p class="subtitle">Open WhatsApp on Phone ${clampedId} > Linked Devices > Link a Device</p>
-                    <div class="qr-box">
-                      <img src="\${data.qrDataUrl}" alt="Device QR Code" class="qr-img" id="qr-img-tag" />
-                    </div>
-                    <p class="refresh-hint">⚡ Live QR Stream Active. Point phone camera now.</p>
-                    <div style="margin-top: 1rem;">
-                      <form method="POST" action="/api/devices/${clampedId}/reset" style="margin: 0;">
-                        <button type="submit" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">⚡ Force Fresh QR (1s Reset)</button>
-                      </form>
-                    </div>
-                  \`;
-                }
-              }
-            }
-          } catch (e) {}
-        }
-
-        if (!currentConnected) {
-          setInterval(pollQrStream, 1500);
-        }
-      </script>
-    </head>
-    <body>
-      <div class="wrapper">
-        <div class="header-nav">
-          <a href="/" class="back-link">← Back to Dashboard</a>
-          <span style="color: #64748b; font-size: 0.85rem;">Slot <strong>${clampedId}</strong> of ${whatsapp.MAX_DEVICES}</span>
-        </div>
-        <div class="tabs">
-          ${tabsHtml}
-        </div>
-        ${bodyContent}
-      </div>
-    </body>
-    </html>
-  `);
+  res.redirect('/?engine=meta_cloud');
 });
 
 /**
@@ -266,7 +103,7 @@ app.get('/', (req, res) => {
   const conversations = chatMemory.getAllConversations ? chatMemory.getAllConversations() : [];
   const activeEngine = whatsapp.getActiveEngine ? whatsapp.getActiveEngine() : 'meta_cloud';
   const isMetaCloud = activeEngine === 'meta_cloud';
-  const dailyTarget = state.dailyMaxLeads || 2000;
+  const dailyTarget = state.dailyMaxLeads || 100;
   const currentSent = state.dailySentCount || 0;
   const progressPct = Math.min(100, Math.round((currentSent / Math.max(1, dailyTarget)) * 100));
 
@@ -282,7 +119,7 @@ app.get('/', (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>🏢 Satyam Realty CRM — Real-Time Meta WhatsApp Cloud Engine (2,000/Day)</title>
+      <title>🏢 Satyam Realty — Official Meta WhatsApp Cloud Bot (100/Day)</title>
       <style>
         :root {
           --bg-dark: #070b12;
@@ -662,24 +499,18 @@ app.get('/', (req, res) => {
           <div class="brand-zone">
             <img src="/assets/karnal_reality_logo.jpg" alt="Logo" class="brand-logo" onerror="this.style.display='none'" />
             <div class="brand-text">
-              <h1>🏢 SATYAM REALTY — ENTERPRISE WHATSAPP CRM</h1>
-              <p>Official Meta WhatsApp Cloud API v21.0 • 2,000 Verified Conversations/Day • Real-Time Lead Matrix</p>
+              <h1>🏢 SATYAM REALTY — OFFICIAL META WHATSAPP CLOUD BOT</h1>
+              <p>Official Meta WhatsApp API (+91 8901849699) • 100 Verified Outreach/Day • Stealth Cloud Cadence</p>
             </div>
           </div>
           <div class="header-actions">
             <span class="engine-pill">
               <span class="pulse-dot"></span>
-              ${isMetaCloud ? 'Meta Cloud API v21.0 Active (2,000/Day)' : 'Baileys Multi-Device Active'}
+              🟢 Official Meta API Connected (+91 8901849699)
             </span>
             <button type="button" onclick="scrollToMetaSetup()" class="btn btn-gold" style="font-size: 0.78rem; padding: 0.45rem 0.85rem;" title="Configure official Meta WhatsApp Cloud API credentials">
-              ⚙️ Meta Bot Setup
+              ⚙️ Meta API Config
             </button>
-            <form method="POST" action="/api/settings/engine" style="margin:0;">
-              <input type="hidden" name="engine" value="${isMetaCloud ? 'baileys' : 'meta_cloud'}">
-              <button type="submit" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.45rem 0.85rem;">
-                ⇄ Switch to ${isMetaCloud ? 'Baileys QR' : 'Meta Cloud'}
-              </button>
-            </form>
             <button type="button" onclick="wakeQueue()" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.45rem 0.85rem; border-color: #38bdf8; color: #38bdf8;" title="Skip current cadence break and dispatch next batch immediately">
               ⚡ Dispatch Now
             </button>
@@ -693,11 +524,11 @@ app.get('/', (req, res) => {
 
         <!-- Telemetry Metrics Grid (MBG Card Layout) -->
         <div class="metrics-grid">
-          <!-- Card 1: 2k Daily Cloud Target -->
+          <!-- Card 1: 100 Daily Cloud Target -->
           <div class="metric-card">
             <div class="metric-label">
               <span>Today's Outreach</span>
-              <span style="color: var(--gold); font-size: 0.7rem; font-weight: 800;">2,000 / DAY TIER</span>
+              <span style="color: var(--gold); font-size: 0.7rem; font-weight: 800;">100 / DAY CLOUD TIER</span>
             </div>
             <div class="metric-val" id="valDailySent" style="color: var(--wa-green);">${currentSent} <span style="font-size: 1rem; color: var(--text-muted);">/ ${dailyTarget}</span></div>
             <div class="progress-bar-container">
@@ -705,7 +536,7 @@ app.get('/', (req, res) => {
             </div>
             <div class="metric-sub" style="margin-top: 0.4rem; display: flex; justify-content: space-between;">
               <span id="lblProgressPct">${progressPct}% Dispatched</span>
-              <span style="color: #38bdf8;">Cloud Turbo (1.5s–3.5s)</span>
+              <span style="color: #38bdf8;">~14m Cloud Cadence (100 msgs/day)</span>
             </div>
           </div>
 
@@ -986,31 +817,31 @@ app.get('/', (req, res) => {
 
         <!-- Lower Controls: Settings, CSV Exports & Shield Ledger -->
         <div class="controls-grid">
-          <!-- 2k Daily Cloud Target Settings -->
+          <!-- 100/Day Daily Cloud Target Settings -->
           <div class="control-card">
             <div class="control-title">
-              <span>⚡ 2,000/Day Meta Cloud Controller</span>
-              <span style="color: var(--gold-glow); font-size: 0.8rem;">Tier 2K Active</span>
+              <span>⚡ 100/Day Official Meta WhatsApp Cloud Controller</span>
+              <span style="color: var(--gold-glow); font-size: 0.8rem;">Tier 100 Active</span>
             </div>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.85rem;">
-              Adjust official Meta Cloud API daily allocation and speed pacing presets without restarting the server.
+              Adjust official Meta WhatsApp Cloud API daily allocation and cadence pacing without restarting the server.
             </p>
             <form method="POST" action="/api/settings/cloud-limit" style="display: flex; gap: 0.5rem; align-items: center;">
-              <input type="number" name="limit" min="100" max="10000" value="${dailyTarget}" style="width: 110px; background: var(--bg-dark); border: 1px solid var(--panel-border); border-radius: 8px; color: #fff; padding: 0.5rem; font-weight: 700; text-align: center;" required />
+              <input type="number" name="limit" min="10" max="10000" value="${dailyTarget}" style="width: 110px; background: var(--bg-dark); border: 1px solid var(--panel-border); border-radius: 8px; color: #fff; padding: 0.5rem; font-weight: 700; text-align: center;" required />
               <button type="submit" class="btn btn-gold" style="font-size: 0.8rem;">Update Limit</button>
             </form>
             <div style="margin-top: 0.85rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
               <form method="POST" action="/api/settings/pacing" style="margin:0;">
-                <input type="hidden" name="preset" value="turbo">
-                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">🚀 Turbo (25s–45s)</button>
+                <input type="hidden" name="preset" value="stealth_14m_100daily">
+                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">🛡️ Standard 100/Day (~14m)</button>
               </form>
               <form method="POST" action="/api/settings/pacing" style="margin:0;">
                 <input type="hidden" name="preset" value="fast">
-                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">⚡ Fast (35s–70s)</button>
+                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">⚡ Fast 200/Day (~7m)</button>
               </form>
               <form method="POST" action="/api/settings/pacing" style="margin:0;">
                 <input type="hidden" name="preset" value="enterprise">
-                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">🛡️ Safe (3m–6m)</button>
+                <button type="submit" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">🔒 Safe 50/Day (~28m)</button>
               </form>
             </div>
           </div>
@@ -1067,7 +898,7 @@ app.get('/', (req, res) => {
 
             // 1. Update Telemetry Cards
             const sent = data.dailySentCount || 0;
-            const target = data.dailyMaxLeads || 2000;
+            const target = data.dailyMaxLeads || 100;
             const pct = Math.min(100, Math.round((sent / Math.max(1, target)) * 100));
 
             document.getElementById('valDailySent').innerHTML = sent + ' <span style="font-size: 1rem; color: var(--text-muted);">/ ' + target + '</span>';
@@ -1478,7 +1309,7 @@ app.get('/api/dashboard/live', (req, res) => {
     engine: whatsapp.getActiveEngine ? whatsapp.getActiveEngine() : 'meta_cloud',
     metaCloud: queueState.metaCloud || {},
     dailySentCount: queueState.dailySentCount || 0,
-    dailyMaxLeads: queueState.dailyMaxLeads || 2000,
+    dailyMaxLeads: queueState.dailyMaxLeads || 100,
     totalSentDb: queueState.totalSentDb || 0,
     queuedRemaining: queueState.queuedRemaining || 0,
     isPaused: queueState.isPaused || false,
@@ -1826,10 +1657,10 @@ app.post('/api/settings/engine', (req, res) => {
 });
 
 /**
- * Update 2k+ Cloud Daily Limit
+ * Update Cloud Daily Limit (Default 100/Day)
  */
 app.post('/api/settings/cloud-limit', (req, res) => {
-  const limit = parseInt(req.body.limit || '2000', 10);
+  const limit = parseInt(req.body.limit || '100', 10);
   queue.saveBotConfig({ dailyMaxLeadsCloud: limit });
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
     return res.json({ success: true, dailyMaxLeadsCloud: limit });
@@ -1962,8 +1793,8 @@ function initKeepAlive() {
  */
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n=========================================================`);
-  console.log(`🏢 Karnal Realty Advisors Multi-Device Lead Bot on Port ${PORT}`);
-  console.log(`📲 Open http://localhost:${PORT}/qr to link WhatsApp devices (Up to ${whatsapp.MAX_DEVICES})`);
+  console.log(`🏢 Satyam Realty Official Meta WhatsApp Cloud Bot (100/Day) on Port ${PORT}`);
+  console.log(`📲 Official Number: +91 8901849699 • Web Console: http://localhost:${PORT}/`);
   console.log(`=========================================================\n`);
 
   // 1. Start autonomous continuous real estate scraper

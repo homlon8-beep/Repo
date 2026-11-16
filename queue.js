@@ -70,7 +70,7 @@ const metaCloudState = {
 };
 
 function getDailyMaxLeadsCloud() {
-  return botConfig.dailyMaxLeadsCloud || 2000;
+  return botConfig.dailyMaxLeadsCloud || 100;
 }
 
 function saveBotConfig(updates) {
@@ -111,7 +111,19 @@ function setDailyMaxLeadsPerDevice(count, preset = 'custom') {
 
   const updates = { dailyMaxLeadsPerDevice: num, pacingPreset: preset };
 
-  if (preset === 'ultra_stealth_30m' || preset === 'stealth_48' || preset === 'ultra_human') {
+  if (preset === 'stealth_14m_100daily' || preset === '100daily' || preset === 'cloud_100') {
+    updates.dailyMaxLeadsPerDevice = 100;
+    updates.dailyMaxLeadsCloud = 100;
+    updates.minMsgDelayMs = 780000;
+    updates.maxMsgDelayMs = 960000;
+    updates.minBreakMins = 13;
+    updates.maxBreakMins = 16;
+    updates.minBatchSize = 1;
+    updates.maxBatchSize = 1;
+    updates.cloudMinMsgDelayMs = 780000;
+    updates.cloudMaxMsgDelayMs = 960000;
+    updates.businessHoursShield = false;
+  } else if (preset === 'ultra_stealth_30m' || preset === 'stealth_48' || preset === 'ultra_human') {
     updates.dailyMaxLeadsPerDevice = 48;
     updates.dailyMaxLeadsCloud = 48;
     updates.minMsgDelayMs = 1740000;
@@ -673,14 +685,14 @@ async function runMetaCloudWorker() {
       scraper.updateLeadStatus(lead.phone, 'failed', sendErr.message, 'meta_cloud');
     }
 
-    // 8. 30-Minute Cadence for Meta Cloud (48 msgs/day target)
-    const minDelay = botConfig.cloudMinMsgDelayMs || (29 * 60 * 1000);
-    const maxDelay = botConfig.cloudMaxMsgDelayMs || (31 * 60 * 1000);
+    // 8. 14-Minute Cadence for Meta Cloud (100 msgs/day target)
+    const minDelay = botConfig.cloudMinMsgDelayMs || (13 * 60 * 1000);
+    const maxDelay = botConfig.cloudMaxMsgDelayMs || (16 * 60 * 1000);
     const delayMs = Math.floor(minDelay + Math.random() * (maxDelay - minDelay));
     const delayMins = Math.round(delayMs / 60000);
     metaCloudState.nextActionTime = Date.now() + delayMs;
-    metaCloudState.currentStatus = `Sent hot lead! Taking ${delayMins}-min cadence rest (48 msgs/day target)...`;
-    console.log(`☕ [Meta Cloud Cadence] 1 message sent. Resting for ${delayMins} mins until ${formatIndiaTime(metaCloudState.nextActionTime)}...`);
+    metaCloudState.currentStatus = `Sent hot lead via Official Meta API! Taking ${delayMins}-min cadence break (100 msgs/day target)...`;
+    console.log(`☕ [Meta Cloud Cadence] 1 message sent via Meta API. Resting for ${delayMins} mins until ${formatIndiaTime(metaCloudState.nextActionTime)}...`);
     await sleep(delayMs);
   }
 }
