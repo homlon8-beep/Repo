@@ -4,7 +4,8 @@
     "apiKey": "be436d16d081d2d650da7fc91461d818",
     "endpoint": "https://consolewebwhatsapp.digitalmbg.com/api/whatsapp/send_meta_templet",
     "phoneNumber": "8901849699",
-    "templateName": "karnal_property_lead_v1"
+    "templateName": "shaurya",
+    "templateLang": "en"
   },
   "dailyMaxLeadsCloud": 48,
   "cloudPacingPreset": "ultra_stealth_30m",

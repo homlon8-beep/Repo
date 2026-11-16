@@ -246,12 +246,16 @@ class MetaCloudWhatsApp {
    */
   async _executeMbgCall(recipientPhone, templateName, bodyParams = []) {
     const url = this.mbgEndpoint || 'https://consolewebwhatsapp.digitalmbg.com/api/whatsapp/send_meta_templet';
+    const tName = templateName || this.defaultTemplate || 'shaurya';
     const payload = {
-      templateName,
+      templateName: tName,
       to: recipientPhone,
-      parameters: bodyParams,
-      variables: bodyParams
+      language: this.defaultTemplateLang || 'en'
     };
+    if (Array.isArray(bodyParams) && bodyParams.length > 0) {
+      payload.parameters = bodyParams;
+      payload.variables = bodyParams;
+    }
 
     try {
       console.log(`📡 [MBG Card Dispatching] -> +${recipientPhone} with Template [${templateName}]...`);
