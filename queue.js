@@ -81,6 +81,7 @@ function saveBotConfig(updates) {
   } catch (err) {
     console.error('Failed to save bot_config.json:', err.message);
   }
+  wakeAllWorkers();
   return botConfig;
 }
 
@@ -353,8 +354,28 @@ function getOrCreateDeviceState(deviceId) {
   return state;
 }
 
+const sleepInterrupts = new Set();
 async function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => {
+    let timer = null;
+    const onInterrupt = () => {
+      if (timer) clearTimeout(timer);
+      sleepInterrupts.delete(onInterrupt);
+      resolve(true);
+    };
+    sleepInterrupts.add(onInterrupt);
+    timer = setTimeout(() => {
+      sleepInterrupts.delete(onInterrupt);
+      resolve(false);
+    }, ms);
+  });
+}
+
+function wakeAllWorkers() {
+  for (const interrupt of sleepInterrupts) {
+    try { interrupt(); } catch (e) {}
+  }
+  sleepInterrupts.clear();
 }
 
 /**
@@ -453,17 +474,8 @@ async function runDeviceWorker(deviceId) {
       continue;
     }
 
-    // 9. Verify WhatsApp registration
-    state.currentStatus = `Checking WhatsApp status for +${lead.phone}...`;
-    const waCheck = await whatsapp.checkNumberOnWhatsApp(deviceId, lead.phone);
-    if (!waCheck.exists) {
-      console.log(`❌ [Device ${deviceId}] +${lead.phone} is not registered on WhatsApp. Skipping!`);
-      scraper.updateLeadStatus(lead.phone, 'not_on_whatsapp', null, deviceId);
-      await sleep(300);
-      continue;
-    }
-
-    lead.jid = waCheck.jid || targetJid;
+    // 9. Pure Direct Sending (Zero socket probes to prevent WhatsApp bot flags)
+    lead.jid = targetJid;
 
     // 10. Generate Two-Step Outreach Message
     state.currentStatus = `Preparing personalized outreach for +${lead.phone}...`;
@@ -690,11 +702,13 @@ function getQueueStatus() {
   const devicesList = [];
   let totalDailySent = 0;
   let totalSessionSent = 0;
+  const now = Date.now();
 
   for (let i = 1; i <= MAX_DEVICES; i++) {
     const s = getOrCreateDeviceState(i);
     const dInfo = whatsapp.getDevice(i);
     const allocatedLimit = getDailyLimitForDevice(i);
+    const remainingSec = s.nextActionTime ? Math.max(0, Math.round((s.nextActionTime - now) / 1000)) : 0;
     totalDailySent += s.dailySentCount;
     totalSessionSent += s.totalSentSession;
 
@@ -711,7 +725,8 @@ function getQueueStatus() {
       currentBatchLimit: s.currentBatchLimit,
       totalSentSession: s.totalSentSession,
       nextActionTime: s.nextActionTime ? formatIndiaTime(s.nextActionTime) : null,
-      nextActionTimestamp: s.nextActionTime
+      nextActionTimestamp: s.nextActionTime,
+      nextActionRemainingSec: remainingSec
     });
   }
 
@@ -719,6 +734,7 @@ function getQueueStatus() {
   const connectedCount = whatsapp.getConnectedDevices ? whatsapp.getConnectedDevices().length : 0;
   const queuedRemaining = scraper.getQueuedLeads ? scraper.getQueuedLeads(2000).length : 0;
   const stats = scraper.getScraperStats ? scraper.getScraperStats() : {};
+  const metaRemainingSec = metaCloudState.nextActionTime ? Math.max(0, Math.round((metaCloudState.nextActionTime - now) / 1000)) : 0;
 
   return {
     engine: whatsapp.getActiveEngine(),
@@ -728,6 +744,8 @@ function getQueueStatus() {
       currentStatus: metaCloudState.currentStatus,
       totalSentSession: metaCloudState.totalSentSession,
       nextActionTime: metaCloudState.nextActionTime ? formatIndiaTime(metaCloudState.nextActionTime) : null,
+      nextActionTimestamp: metaCloudState.nextActionTime,
+      nextActionRemainingSec: metaRemainingSec,
       configured: whatsapp.metaCloud.isConfigured(),
       tier: whatsapp.metaCloud.tierInfo?.tier || 'TIER_2K (2,000 msgs/24h)'
     },
@@ -755,6 +773,7 @@ module.exports = {
   startQueueWorker: startQueue,
   pauseQueue,
   resumeQueue,
+  wakeAllWorkers,
   getQueueStatus,
   getQueueState: getQueueStatus,
   getDailyMaxLeadsPerDevice,

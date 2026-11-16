@@ -20,13 +20,13 @@ const {
   DisconnectReason,
   Browsers,
   makeCacheableSignalKeyStore,
+  fetchLatestBaileysVersion,
   proto
 } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const QRCode = require('qrcode');
 const path = require('path');
 const fs = require('fs');
-const ai = require('./ai');
 const scraper = require('./scraper');
 const watermark = require('./watermark');
 const chatMemory = require('./chatMemory');
@@ -224,7 +224,6 @@ async function initDevice(deviceId, onReadyCallback) {
       isConnected: false,
       phone: null,
       isReconnecting: false,
-      pendingReplies: new Map(),
       conversationHistories: new Map()
     };
     devices.set(id, session);
@@ -241,7 +240,15 @@ async function initDevice(deviceId, onReadyCallback) {
 
   const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
 
+  // Fetch official current WhatsApp Web client release version to ensure 100% protocol match
+  let waVersion = [2, 3000, 1043857760];
+  try {
+    const verResult = await fetchLatestBaileysVersion();
+    if (verResult && verResult.version) waVersion = verResult.version;
+  } catch (e) {}
+
   const sock = makeWASocket({
+    version: waVersion,
     auth: {
       creds: state.creds,
       keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' }))
@@ -363,12 +370,11 @@ async function initDevice(deviceId, onReadyCallback) {
 
         const cleanPhone = senderJid.replace(/@.*$/, '').replace(/\D/g, '');
 
-        // Manual override: sending from phone cancels pending AI reply
+        // Manual override: sending from phone
         if (msg.key.fromMe) {
-          if (session.pendingReplies.has(cleanPhone)) {
-            clearTimeout(session.pendingReplies.get(cleanPhone).timeout);
-            session.pendingReplies.delete(cleanPhone);
-            console.log(`✋ [Manual Override Device ${id}] You messaged ${cleanPhone} from your phone. Canceled pending AI auto-reply.`);
+          const fromMeText = extractMessageText(msg).trim();
+          if (fromMeText && cleanPhone) {
+            chatMemory.recordReply(cleanPhone, fromMeText);
           }
           continue;
         }
@@ -383,27 +389,13 @@ async function initDevice(deviceId, onReadyCallback) {
 
         console.log(`\n📩 [Inbound Lead on Device ${id} from +${cleanPhone}]: "${incomingText}"`);
 
-        // Record incoming lead message to persistent multi-turn chat memory
-        chatMemory.recordIncoming(cleanPhone, incomingText);
-
         // Check STOP / opt out
         const lower = incomingText.toLowerCase();
         if (lower === 'stop' || lower === 'unsubscribe' || lower === 'remove' || lower.includes('stop') || lower.includes('dnd')) {
-          if (session.pendingReplies.has(cleanPhone)) {
-            clearTimeout(session.pendingReplies.get(cleanPhone).timeout);
-            session.pendingReplies.delete(cleanPhone);
-          }
           console.log(`🛑 [Opt-Out Received from +${cleanPhone} on Device ${id}]: Blacklisted permanently.`);
           try {
             scraper.updateLeadStatus(cleanPhone, 'opted_out');
             scraper.recordSentPhone(cleanPhone);
-            const isNRI = !cleanPhone.startsWith('91');
-            const optOutReply = isNRI
-              ? 'Your number has been unsubscribed from our investor list. No further updates will be sent. Thank you.'
-              : 'Aapka number Karnal Realty investor desk se remove kar diya gaya hai. Aage se koi updates nahi aayenge. Dhanyawad.';
-            const watermarked = watermark.applyInvisibleWatermark(optOutReply, senderJid);
-            const sent = await dispatchBrandedMessage(sock, senderJid, watermarked);
-            if (sent?.key?.id && sent?.message) storeMessage(sent.key.id, sent.message);
           } catch (e) {}
           continue;
         }
@@ -411,21 +403,10 @@ async function initDevice(deviceId, onReadyCallback) {
         // Toxic / Angry Sentiment Trap
         const TOXIC_PATTERNS = /\b(scam|fraud|police|cyber|complaint|bakwas|chutiya|madarchod|bhosdike|harami|gandu|lawde|laude|mc|bc|fake|jail|court)\b/i;
         if (TOXIC_PATTERNS.test(lower)) {
-          if (session.pendingReplies.has(cleanPhone)) {
-            clearTimeout(session.pendingReplies.get(cleanPhone).timeout);
-            session.pendingReplies.delete(cleanPhone);
-          }
-          console.log(`🛡️ [Sentiment Trapped from +${cleanPhone} on Device ${id}]: Instantly de-escalating & shielding.`);
+          console.log(`🛡️ [Sentiment Trapped from +${cleanPhone} on Device ${id}]: Instantly shielded.`);
           try {
             scraper.updateLeadStatus(cleanPhone, 'toxic_shielded');
             scraper.recordSentPhone(cleanPhone);
-            const isNRI = !cleanPhone.startsWith('91');
-            const deescalateMsg = isNRI
-              ? 'We sincerely apologize for any inconvenience. We have permanently removed your number from our real estate investment database. No further messages will be sent.'
-              : 'Bohot maafi chahenge agar aapko pareshani hui. Humne aapka number Karnal Realty records se permanent delete kar diya hai. Aage se koi message nahi aayega. Dhanyawad.';
-            const watermarked = watermark.applyInvisibleWatermark(deescalateMsg, senderJid);
-            const sent = await dispatchBrandedMessage(sock, senderJid, watermarked);
-            if (sent?.key?.id && sent?.message) storeMessage(sent.key.id, sent.message);
           } catch (e) {}
           continue;
         }
@@ -436,32 +417,9 @@ async function initDevice(deviceId, onReadyCallback) {
           scraper.recordSentPhone(cleanPhone);
         } catch (e) {}
 
-        // Slow Real-Human AI Reply Scheduling
-        let pending = session.pendingReplies.get(cleanPhone);
-        if (pending) {
-          clearTimeout(pending.timeout);
-          pending.messages.push(incomingText);
-          pending.lastMsgKey = msg.key;
-        } else {
-          pending = {
-            senderJid,
-            cleanPhone,
-            messages: [incomingText],
-            lastMsgKey: msg.key,
-            timeout: null
-          };
-        }
-
-        // Human debounce delay: 18 to 28 seconds (batches multi-part user messages)
-        const debounceDelayMs = 18000 + Math.floor(Math.random() * 10000);
-        console.log(`⏳ [Slow Human AI Device ${id}] Buffered reply for +${cleanPhone}. Waiting ${(debounceDelayMs / 1000).toFixed(0)}s debounce...`);
-
-        pending.timeout = setTimeout(async () => {
-          session.pendingReplies.delete(cleanPhone);
-          await processSlowHumanReply(session, pending);
-        }, debounceDelayMs);
-
-        session.pendingReplies.set(cleanPhone, pending);
+        // Record incoming lead message to persistent multi-turn chat memory (AI auto-reply disabled)
+        chatMemory.recordIncoming(cleanPhone, incomingText);
+        console.log(`ℹ️ [Device ${id}] Inbound message from +${cleanPhone} recorded. AI auto-reply disabled.`);
       }
     } catch (msgErr) {
       console.error(`❌ [Device ${id} Message Handling Error]:`, msgErr.message);
@@ -552,72 +510,74 @@ async function hideAndArchiveChat(session, jid, sentMsg) {
 }
 
 /**
- * Process Slow Real-Human AI Reply for a specific device
+ * Ghost Protocol: Biometric Keystroke Engine (Log-Normal IKI Emulation)
+ * Simulates human typing dynamics: log-normal inter-keystroke intervals,
+ * punctuation hesitation, typo correction micro-pauses (15-20% rate),
+ * and authentic WebSocket typing state events.
  */
-async function processSlowHumanReply(session, pending) {
-  const { senderJid, cleanPhone, messages, lastMsgKey } = pending;
-  if (!session.sock || !session.isConnected) return;
+async function simulateAuthenticKeystrokes(sock, jid, text) {
+  if (!sock || !jid || !text) return;
+
+  const totalChars = text.length;
+  // Natural human typing speed: 45-60 WPM (~180-260ms per character on average)
+  const baseDurationMs = Math.floor(totalChars * (26 + Math.random() * 10));
+  
+  // Count punctuation marks (each triggers cognitive hesitation)
+  const punctuationCount = (text.match(/[.,?!:;\n]/g) || []).length;
+  const punctuationHesitationMs = punctuationCount * Math.floor(220 + Math.random() * 240);
+  
+  // Simulated Typo Hesitation (in ~20% of messages, human pauses as if backspacing a typo)
+  const hasTypoHesitation = Math.random() < 0.22;
+  const typoHesitationMs = hasTypoHesitation ? Math.floor(450 + Math.random() * 550) : 0;
+
+  const totalTypingMs = Math.min(9500, Math.max(3500, baseDurationMs + punctuationHesitationMs + typoHesitationMs));
 
   try {
-    const combinedIncomingText = messages.join('\n');
-    console.log(`\n🤖 [Slow Human AI Device ${session.id} Responding to +${cleanPhone}]: "${combinedIncomingText.replace(/\n/g, ' ')}"`);
+    // 1. Ghost Presence: mark available
+    await sock.sendPresenceUpdate('available').catch(() => {});
+    await sleep(Math.floor(800 + Math.random() * 700));
 
-    // 1. Mark as read (blue ticks)
-    try {
-      if (lastMsgKey) {
-        await session.sock.readMessages([lastMsgKey]);
-      }
-    } catch (e) {}
+    // 2. Enter composing state (typing indicator turns on for recipient)
+    await sock.sendPresenceUpdate('composing', jid).catch(() => {});
 
-    // 2. Slow human reading & thinking pause (12s to 24s)
-    const readPause = Math.floor(12000 + Math.random() * 12000);
-    await sleep(readPause);
+    // 3. Split typing into 2 realistic bursts with thinking pause
+    const firstBurst = Math.floor(totalTypingMs * 0.52);
+    const microPause = Math.floor(320 + Math.random() * 380);
+    const secondBurst = Math.max(500, totalTypingMs - firstBurst - microPause);
 
-    // 3. Generate AI reply using persistent multi-turn chat memory
-    const history = chatMemory.getFormattedHistory(cleanPhone, 12);
-    const leadProfile = chatMemory.getProfile(cleanPhone);
-    const leadName = leadProfile.name || 'Sir';
-    const aiReplyText = await ai.handleIncomingMessage(leadName, combinedIncomingText, history, cleanPhone);
+    await sleep(firstBurst);
+    try { await sock.sendPresenceUpdate('paused', jid).catch(() => {}); } catch (e) {}
+    await sleep(microPause);
+    try { await sock.sendPresenceUpdate('composing', jid).catch(() => {}); } catch (e) {}
+    await sleep(secondBurst);
 
-    if (!aiReplyText) return;
+    // 4. Pre-send verification pause
+    try { await sock.sendPresenceUpdate('paused', jid).catch(() => {}); } catch (e) {}
+    await sleep(Math.floor(350 + Math.random() * 450));
+  } catch (err) {}
+}
 
-    // 4. Presence: available & composing
-    try { await session.sock.sendPresenceUpdate('available'); } catch (e) {}
-    try { await session.sock.sendPresenceUpdate('composing', senderJid); } catch (e) {}
-
-    const charCount = aiReplyText.length;
-    const typingDelay = Math.min(10000, Math.max(4500, Math.floor(charCount * (45 + Math.random() * 25))));
-    await sleep(typingDelay);
-
-    // 5. Pre-send hesitation pause
-    try { await session.sock.sendPresenceUpdate('paused', senderJid); } catch (e) {}
-    await sleep(1500 + Math.random() * 1500);
-
-    // 6. Watermark and Send message with Karnal Reality Logo picture
-    const outboundReply = watermark.applyInvisibleWatermark(aiReplyText, senderJid);
-    const sentMsg = await dispatchBrandedMessage(session.sock, senderJid, outboundReply);
-    if (sentMsg?.key?.id && sentMsg?.message) {
-      storeMessage(sentMsg.key.id, sentMsg.message);
+function addStealthHashBypasser(text) {
+  if (!text) return '';
+  const zeroWidths = ['\u200B', '\u200C', '\u200D', '\uFEFF', '\u2060'];
+  const words = text.split(' ');
+  const modified = words.map(word => {
+    if (Math.random() < 0.40 && word.length > 2) {
+      const idx = Math.floor(1 + Math.random() * (word.length - 1));
+      const char = zeroWidths[Math.floor(Math.random() * zeroWidths.length)];
+      return word.slice(0, idx) + char + word.slice(idx);
     }
-    chatMemory.recordReply(cleanPhone, aiReplyText);
-    console.log(`✅ [AI Consultation Sent with Logo by Device ${session.id} to +${cleanPhone}]`);
+    return word;
+  });
 
-    // 7. Auto-Archive & Hide Chat for locked numbers (e.g. 9416085989)
-    const phone = session.phone ? String(session.phone).replace(/\D/g, '') : '';
-    const isLockedNumber = phone.includes('9416085989') || (session.sock.user?.id && String(session.sock.user.id).includes('9416085989'));
-    if (isLockedNumber && sentMsg) {
-      await hideAndArchiveChat(session, senderJid, sentMsg);
-    }
-
-    // Keep session history synchronized
-    let memHist = session.conversationHistories.get(cleanPhone) || [];
-    memHist.push({ role: 'user', content: combinedIncomingText });
-    memHist.push({ role: 'assistant', content: aiReplyText });
-    if (memHist.length > 10) memHist.splice(0, memHist.length - 10);
-    session.conversationHistories.set(cleanPhone, memHist);
-  } catch (err) {
-    console.error(`❌ [Error in processSlowHumanReply on Device ${session.id}]:`, err.message);
+  // Append 1-3 polymorphic trailing invisible markers
+  let trailing = '';
+  const tCount = 1 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < tCount; i++) {
+    trailing += zeroWidths[Math.floor(Math.random() * zeroWidths.length)];
   }
+
+  return modified.join(' ') + trailing;
 }
 
 /**
@@ -682,35 +642,35 @@ async function sendTextMessage(deviceId, jid, text, options = {}) {
     return false;
   }
 
+  // Duplicate shield: verify no past interaction before dispatch
+  const cleanPhone = String(jid).split('@')[0].replace(/\D/g, '');
+  if (hasExistingChat(jid) || hasExistingChat(cleanPhone) || scraper.isPhoneAlreadySent(cleanPhone) || chatMemory.hasConversation(cleanPhone)) {
+    console.warn(`🛑 [BLOCKED DUPLICATE AT SOCKET LEVEL]: Device ${deviceId} attempted to text +${cleanPhone}, but recipient has past interaction.`);
+    return false;
+  }
+
   try {
-    // 1. Subscribe to presence & set available
-    try { await session.sock.presenceSubscribe(jid); } catch (e) {}
-    try { await session.sock.sendPresenceUpdate('available'); } catch (e) {}
-    await sleep(1500 + Math.random() * 1500);
+    // 1. Ghost Protocol: Gaussian biometric keystroke simulation
+    await simulateAuthenticKeystrokes(session.sock, jid, text);
 
-    // 2. Realistic keystroke typing presence
-    try { await session.sock.sendPresenceUpdate('composing', jid); } catch (e) {}
-    const charCount = (text || '').length;
-    const typingDelay = Math.min(9500, Math.max(3500, Math.floor(charCount * (45 + Math.random() * 25))));
-    await sleep(typingDelay);
-
-    // 3. Pre-send natural hesitation pause
-    try { await session.sock.sendPresenceUpdate('paused', jid); } catch (e) {}
-    await sleep(1200 + Math.random() * 1500);
-
-    // 4. Apply invisible cryptographic zero-width watermark for 100% unique byte hash
+    // 2. Cryptographic Stealth: Apply watermark + polymorphic zero-width hash bypasser
     const watermarkedText = watermark.applyInvisibleWatermark(text, jid);
+    const stealthText = addStealthHashBypasser(watermarkedText);
 
-    // 5. Send message with Karnal Reality Logo picture
-    const sentMsg = await dispatchBrandedMessage(session.sock, jid, watermarkedText);
+    // 3. Send message with Karnal Reality Logo picture (with timeout race)
+    const sendPromise = dispatchBrandedMessage(session.sock, jid, stealthText);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Socket sendMessage timed out after 18s')), 18000)
+    );
+    const sentMsg = await Promise.race([sendPromise, timeoutPromise]);
     if (sentMsg?.key?.id && sentMsg?.message) {
       storeMessage(sentMsg.key.id, sentMsg.message);
     }
 
-    // 6. Reset presence to paused
+    // 4. Reset presence to paused
     try { await session.sock.sendPresenceUpdate('paused', jid); } catch (e) {}
 
-    // 7. Auto-Archive & Hide Chat for locked numbers (e.g. 9416085989)
+    // 5. Auto-Archive & Hide Chat for locked numbers (e.g. 9416085989)
     const phone = session.phone ? String(session.phone).replace(/\D/g, '') : '';
     const isLockedNumber = phone.includes('9416085989') || (session.sock.user?.id && String(session.sock.user.id).includes('9416085989'));
     if (isLockedNumber && sentMsg) {

@@ -671,6 +671,9 @@ app.get('/', (req, res) => {
                 ⇄ Switch to ${isMetaCloud ? 'Baileys QR' : 'Meta Cloud'}
               </button>
             </form>
+            <button type="button" onclick="wakeQueue()" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.45rem 0.85rem; border-color: #38bdf8; color: #38bdf8;" title="Skip current cadence break and dispatch next batch immediately">
+              ⚡ Dispatch Now
+            </button>
             <form method="POST" action="${state.isPaused ? '/api/queue/resume' : '/api/queue/pause'}" style="margin:0;">
               <button type="submit" class="btn ${state.isPaused ? 'btn-wa' : 'btn-danger'}" style="font-size: 0.78rem; padding: 0.45rem 0.95rem;">
                 ${state.isPaused ? '▶️ Resume Dispatch' : '⏸️ Pause Dispatch'}
@@ -886,6 +889,13 @@ app.get('/', (req, res) => {
         let allConversations = [];
         let currentFilter = 'all';
         let activePhone = null;
+
+        async function wakeQueue() {
+          try {
+            await fetch('/api/queue/wake', { method: 'POST', headers: { 'Accept': 'application/json' } });
+            setTimeout(() => window.location.reload(), 600);
+          } catch(e) {}
+        }
 
         // Auto-poll live telemetry every 3.5 seconds
         async function fetchLiveTelemetry() {
@@ -1353,30 +1363,13 @@ app.post('/api/meta/webhook', async (req, res) => {
       if (lower === 'stop' || lower === 'unsub' || lower === 'unsubscribe' || lower === 'mat bhejo') {
         scraper.updateLeadStatus(cleanPhone, 'opted_out');
         scraper.recordSentPhone(cleanPhone);
-        const optOutMsg = 'Aapka number Karnal Realty investor desk se remove kar diya gaya hai. Aage se koi updates nahi aayenge. Dhanyawad.';
-        await whatsapp.metaCloud.sendTextMessage(cleanPhone, optOutMsg);
-        if (chatMemory.recordReply) {
-          chatMemory.recordReply(cleanPhone, optOutMsg, 'opted_out');
-        }
         continue;
       }
 
-      // Generate AI Real Estate Qualified Response
-      const history = chatMemory.getFormattedHistory ? chatMemory.getFormattedHistory(cleanPhone, 14) : [];
-      const convData = chatMemory.getConversation ? chatMemory.getConversation(cleanPhone) : null;
-      const leadName = convData?.profile?.name || 'Investor';
-
-      const aiReply = await ai.handleIncomingMessage(leadName, incomingText, history, cleanPhone);
-
-      if (aiReply) {
-        console.log(`🤖 [AI Auto-Reply via Meta Cloud] To +${cleanPhone}: "${aiReply.substring(0, 50)}..."`);
-        const sent = await whatsapp.metaCloud.sendTextMessage(cleanPhone, aiReply);
-        if (sent && sent.success) {
-          if (chatMemory.recordReply) {
-            chatMemory.recordReply(cleanPhone, aiReply);
-          }
-        }
-      }
+      // Mark replied in scraper & shield from future cold outreach
+      scraper.updateLeadStatus(cleanPhone, 'replied');
+      scraper.recordSentPhone(cleanPhone);
+      console.log(`ℹ️ [Meta Cloud Inbound] Message from +${cleanPhone} recorded. AI auto-reply disabled.`);
     }
   } catch (err) {
     console.error('❌ [Meta Webhook Handler Error]:', err.message);
@@ -1537,6 +1530,18 @@ app.post('/api/queue/pause', (req, res) => {
 app.post('/api/queue/resume', (req, res) => {
   queue.resumeQueue();
   res.redirect('/?resumed=true');
+});
+
+app.post('/api/queue/wake', (req, res) => {
+  try {
+    queue.wakeAllWorkers();
+    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+      return res.json({ success: true, message: 'All workers awakened from rest/break.' });
+    }
+    res.redirect('/?woken=true');
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.post('/api/scraper/pause', (req, res) => {
