@@ -64,6 +64,7 @@ class MetaCloudWhatsApp {
           this.mbgEndpoint = raw.mbgConfig.endpoint || this.mbgEndpoint;
           this.mbgPhoneNumber = raw.mbgConfig.phoneNumber || this.mbgPhoneNumber;
           if (raw.mbgConfig.templateName) this.defaultTemplate = raw.mbgConfig.templateName;
+          if (raw.mbgConfig.templateLang) this.defaultTemplateLang = raw.mbgConfig.templateLang;
         }
       }
     } catch (_) {}
@@ -73,8 +74,8 @@ class MetaCloudWhatsApp {
     this.wabaId = saved.wabaId || process.env.META_WABA_ID || this.wabaId || '';
     this.verifyToken = saved.verifyToken || process.env.META_VERIFY_TOKEN || this.verifyToken || 'satyam_karnal_webhook_2026';
     this.appSecret = saved.appSecret || process.env.META_APP_SECRET || this.appSecret || '';
-    this.defaultTemplate = saved.templateName || saved.defaultTemplate || process.env.META_TEMPLATE_NAME || this.defaultTemplate || 'karnal_property_lead_v1';
-    this.defaultTemplateLang = saved.templateLang || saved.defaultTemplateLang || process.env.META_TEMPLATE_LANG || this.defaultTemplateLang || 'hi';
+    this.defaultTemplate = saved.templateName || saved.defaultTemplate || process.env.META_TEMPLATE_NAME || this.defaultTemplate || 'shaurya';
+    this.defaultTemplateLang = saved.templateLang || saved.defaultTemplateLang || process.env.META_TEMPLATE_LANG || this.defaultTemplateLang || 'en';
     this.mbgApiKey = saved.mbgApiKey || this.mbgApiKey || process.env.MBG_API_KEY || 'be436d16d081d2d650da7fc91461d818';
   }
 
@@ -244,13 +245,14 @@ class MetaCloudWhatsApp {
   /**
    * Execute dispatch via MBG Card Gateway
    */
-  async _executeMbgCall(recipientPhone, templateName, bodyParams = []) {
+  async _executeMbgCall(recipientPhone, templateName, languageCode = 'en', bodyParams = []) {
     const url = this.mbgEndpoint || 'https://consolewebwhatsapp.digitalmbg.com/api/whatsapp/send_meta_templet';
     const tName = templateName || this.defaultTemplate || 'shaurya';
+    const lang = languageCode || this.defaultTemplateLang || 'en';
     const payload = {
       templateName: tName,
       to: recipientPhone,
-      language: this.defaultTemplateLang || 'en'
+      language: lang
     };
     if (Array.isArray(bodyParams) && bodyParams.length > 0) {
       payload.parameters = bodyParams;
@@ -258,7 +260,7 @@ class MetaCloudWhatsApp {
     }
 
     try {
-      console.log(`📡 [MBG Card Dispatching] -> +${recipientPhone} with Template [${templateName}]...`);
+      console.log(`📡 [MBG Card Dispatching] -> +${recipientPhone} with Template [${tName}] (${lang})...`);
       const res = await fetch(url, {
         method: 'POST',
         headers: {
@@ -272,8 +274,8 @@ class MetaCloudWhatsApp {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        const msgId = data.messageId || data.id || `mbg_${Date.now()}`;
-        console.log(`✅ [MBG Card Sent] Template [${templateName}] -> +${recipientPhone} (ID: ${msgId})`);
+        const msgId = (data.response && data.response.message_id) || data.messageId || data.id || (data.response && data.response.id) || `mbg_${Date.now()}`;
+        console.log(`✅ [MBG Card Sent] Template [${tName}] -> +${recipientPhone} (ID: ${msgId})`);
         return {
           success: true,
           messageId: msgId,
@@ -317,7 +319,7 @@ class MetaCloudWhatsApp {
 
     // Dispatch via MBG Card if API key is active
     if (this.mbgApiKey) {
-      return await this._executeMbgCall(recipientPhone, tName, bodyParams);
+      return await this._executeMbgCall(recipientPhone, tName, lang, bodyParams);
     }
 
     const components = [];
