@@ -812,7 +812,7 @@ function getConnectedDevices() {
 
 function isDeviceConnected(deviceId) {
   if (getActiveEngine() === 'meta_cloud') {
-    return metaCloud.isConfigured();
+    return false; // Individual QR slots inactive in Meta Cloud mode
   }
   const s = devices.get(parseInt(deviceId, 10));
   return s ? s.isConnected : false;

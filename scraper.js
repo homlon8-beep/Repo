@@ -375,12 +375,17 @@ function claimNextLead(deviceId) {
   // Filter all candidates that haven't been sent yet and strictly match Karnal intent
   const available = db.leads.filter(l => !isPhoneAlreadySent(l.phone) && isStrictKarnalLead(l));
 
-  // 1. Check hot leads assigned to this device slot
-  let candidates = available.filter(l => l.status === 'queued' && (l.assignedAccount === devKey || l.assignedAccount === String(deviceId)));
+  // 1. Check hot leads assigned to this device slot (or all queued leads for meta_cloud)
+  let candidates = [];
+  if (deviceId === 'meta_cloud') {
+    candidates = available.filter(l => l.status === 'queued');
+  } else {
+    candidates = available.filter(l => l.status === 'queued' && (l.assignedAccount === devKey || l.assignedAccount === String(deviceId)));
 
-  // 2. Fall back to any unassigned queued leads
-  if (candidates.length === 0) {
-    candidates = available.filter(l => l.status === 'queued' && !l.assignedAccount);
+    // 2. Fall back to any unassigned queued leads
+    if (candidates.length === 0) {
+      candidates = available.filter(l => l.status === 'queued' && !l.assignedAccount);
+    }
   }
 
   // 3. Stalled processing leads fallback (> 15 mins)

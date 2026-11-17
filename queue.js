@@ -418,6 +418,9 @@ function wakeAllWorkers() {
  * Worker loop for an individual WhatsApp device slot
  */
 async function runDeviceWorker(deviceId) {
+  if (whatsapp.getActiveEngine() === 'meta_cloud') {
+    return; // Baileys device workers do not run in Meta Cloud mode
+  }
   const state = getOrCreateDeviceState(deviceId);
   const allocatedLimit = getDailyLimitForDevice(deviceId);
   console.log(`⚡ [Karnal Worker Device ${deviceId}] Started independent dispatcher (${allocatedLimit} leads/day allocation, Preset: ${botConfig.pacingPreset || 'fast'}).`);
@@ -740,16 +743,18 @@ function startQueue() {
   isPaused = false;
   console.log(`🚀 [Karnal Enterprise Cadence Engine] Starting dispatchers (Active Engine: ${whatsapp.getActiveEngine()})...`);
 
-  // 1. Start Official Meta Cloud High-Speed Dispatcher (2,000+ msgs/day)
-  runMetaCloudWorker().catch(err => {
-    console.error('Fatal crash in Meta Cloud Worker:', err);
-  });
-
-  // 2. Start Baileys Device Workers (parallel or backup)
-  for (let i = 1; i <= MAX_DEVICES; i++) {
-    runDeviceWorker(i).catch(err => {
-      console.error(`Fatal crash in Worker Device ${i}:`, err);
+  // 1. Start Official Meta Cloud High-Speed Dispatcher (250 msgs/day target via MBG)
+  if (whatsapp.getActiveEngine() === 'meta_cloud') {
+    runMetaCloudWorker().catch(err => {
+      console.error('Fatal crash in Meta Cloud Worker:', err);
     });
+  } else {
+    // 2. Start Baileys Device Workers (parallel or backup)
+    for (let i = 1; i <= MAX_DEVICES; i++) {
+      runDeviceWorker(i).catch(err => {
+        console.error(`Fatal crash in Worker Device ${i}:`, err);
+      });
+    }
   }
 }
 
