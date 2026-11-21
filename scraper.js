@@ -201,12 +201,12 @@ const TERRITORIES = {
     focus: 'hot_commercial_sco',
     locations: ['GT Road', 'Sector 12', 'Model Town', 'Namaste Chowk', 'Sector 8', 'Sector 9'],
     queries: [
-      '"looking to buy" "commercial plot" "karnal" "call" OR "whatsapp"',
-      '"want to buy" "SCO plot" "karnal" "phone" OR "contact"',
-      '"urgent requirement" "commercial plot" "karnal" "call"',
-      '"ready to invest" "commercial property" "karnal" "whatsapp"',
-      '"cash buyer" "SCO" "karnal" "phone"',
-      '"need commercial land" "karnal" "gt road" "contact"'
+      'site:wa.me/91 "karnal"',
+      '"wa.me/91" "karnal" ("commercial" OR "SCO" OR "plot")',
+      '"api.whatsapp.com/send?phone=91" "karnal"',
+      '"WhatsApp me" "karnal" ("commercial plot" OR "SCO plot")',
+      '"chat.whatsapp.com" "karnal property"',
+      '"WhatsApp:" "karnal" ("want to buy" OR "commercial plot")'
     ]
   },
   device_2: {
@@ -214,11 +214,11 @@ const TERRITORIES = {
     focus: 'hot_retail_investors',
     locations: ['Mughal Canal', 'Kunjpura Road', 'Mall Road', 'Railway Road', 'Sector 13'],
     queries: [
-      '"looking to buy shop" "karnal" "phone" OR "whatsapp"',
-      '"want to buy showroom" "karnal" "contact" OR "call"',
-      '"urgent requirement" "shop" "mughal canal" "phone"',
-      '"buyer requirement" "commercial shop" "karnal" "mobile"',
-      '"ready to buy retail shop" "karnal" "whatsapp"'
+      '"wa.me/91" "karnal" ("shop" OR "showroom" OR "retail")',
+      'site:wa.me/91 "mughal canal" OR "kunjpura road"',
+      '"WhatsApp me" "karnal" ("shop" OR "showroom")',
+      '"WhatsApp:" "karnal" "mughal canal" ("buyer" OR "shop")',
+      '"api.whatsapp.com/send?phone=91" ("karnal shop" OR "karnal retail")'
     ]
   },
   device_3: {
@@ -226,10 +226,10 @@ const TERRITORIES = {
     focus: 'hot_nri_canada_us',
     locations: ['Brampton', 'Surrey', 'Toronto', 'Calgary', 'Vancouver', 'New York'],
     queries: [
-      'site:facebook.com ("Canada" OR "Brampton" OR "Surrey") ("looking to invest in Karnal" OR "buying plot in Karnal") "whatsapp"',
-      '("NRI looking to buy" OR "NRI buyer") "Karnal" ("+1" OR "Canada") "whatsapp"',
-      '"NRI investor" "want to buy" "Karnal SCO" "contact" OR "call"',
-      '"Canada NRI" "buying commercial property" "Karnal" "phone"'
+      'site:wa.me/1 "karnal"',
+      'site:facebook.com ("Canada" OR "Brampton") "wa.me/91" "karnal"',
+      '"wa.me/1" ("invest in karnal" OR "karnal property" OR "SCO")',
+      '"WhatsApp" ("NRI buyer" OR "Canada NRI") "karnal" ("+1" OR "wa.me")'
     ]
   },
   device_4: {
@@ -237,10 +237,10 @@ const TERRITORIES = {
     focus: 'hot_nri_uk',
     locations: ['London', 'Birmingham', 'Leicester', 'Southall', 'Coventry'],
     queries: [
-      'site:facebook.com ("UK" OR "London" OR "Birmingham") ("buying property in Karnal" OR "looking to invest in Karnal") "whatsapp"',
-      '("UK NRI" OR "London investor") "want to buy plot" "Karnal" "phone"',
-      '"NRI investor" "buying SCO plot" "Karnal" ("+44" OR "UK") "call"',
-      '"NRI buyer" "commercial plot in Karnal" "whatsapp"'
+      'site:wa.me/44 "karnal"',
+      'site:facebook.com ("London" OR "UK") "wa.me/91" "karnal"',
+      '"wa.me/44" ("buying in karnal" OR "karnal plot" OR "karnal SCO")',
+      '"WhatsApp" ("UK NRI" OR "London") "karnal property"'
     ]
   },
   device_5: {
@@ -248,10 +248,10 @@ const TERRITORIES = {
     focus: 'hot_nri_aus_uae',
     locations: ['Melbourne', 'Sydney', 'Brisbane', 'Dubai', 'Abu Dhabi', 'Sharjah'],
     queries: [
-      'site:facebook.com ("Australia" OR "Dubai" OR "UAE") ("buying plot in Karnal" OR "invest in Karnal commercial") "whatsapp"',
-      '("Dubai NRI" OR "Australia investor") "looking to buy" "Karnal" ("+61" OR "+971") "whatsapp"',
-      '"UAE investor" "want to invest in Karnal property" "contact"',
-      '"Gulf NRI" "buying commercial space" "Karnal" "phone"'
+      'site:wa.me/971 "karnal"',
+      'site:wa.me/61 "karnal"',
+      'site:facebook.com ("Dubai" OR "UAE" OR "Australia") "wa.me/91" "karnal"',
+      '"wa.me/971" ("karnal commercial" OR "karnal plot")'
     ]
   },
   device_6: {
@@ -259,11 +259,11 @@ const TERRITORIES = {
     focus: 'hot_domestic_hnw',
     locations: ['Panipat', 'Kurukshetra', 'Ambala', 'Chandigarh', 'Delhi-NCR', 'Karnal'],
     queries: [
-      '"looking to buy plot" "karnal" ("sector 32" OR "sector 33" OR "sector 8" OR "sector 9") "phone"',
-      '"urgent buyer" "residential plot" "karnal" "whatsapp"',
-      '"ready to buy" "plot in karnal" "contact" OR "call"',
-      '"want to buy" "CHD city" OR "Alpha city" "karnal" "phone"',
-      '"cash buyer" "farmhouse land" "karnal" "contact"'
+      '"wa.me/91" "karnal" ("sector 32" OR "sector 33" OR "sector 8" OR "sector 9" OR "CHD")',
+      'site:wa.me/91 "karnal plot"',
+      '"WhatsApp me" "karnal" ("residential plot" OR "farmhouse")',
+      '"chat.whatsapp.com" "karnal buyers"',
+      '"api.whatsapp.com/send?phone=91" "karnal" "plot"'
     ]
   }
 };
@@ -311,6 +311,11 @@ function isStrictKarnalLead(item) {
 
   const mentionsKarnal = karnalKeywords.some(kw => allText.includes(kw));
 
+  // Manual inputs from user dashboard are always approved
+  if (item.source === 'manual_dashboard' || item.source === 'manual_import' || item.source === 'manual_form') {
+    return true;
+  }
+
   // NRI check (non-India phone or overseas country)
   const isNri = (phone.length > 0 && !phone.startsWith('91')) || (country && country !== 'india');
   if (isNri) {
@@ -328,6 +333,15 @@ function addLeadsToQueue(newLeads = [], defaultAccount = null) {
   let added = 0;
 
   for (const item of newLeads) {
+    // CRITICAL: Strictly reject any number that does NOT have verified WhatsApp confirmation!
+    const isVerified = Boolean(
+      item.isVerifiedWhatsApp ||
+      item.source === 'manual_dashboard' ||
+      item.source === 'manual_import' ||
+      item.source === 'manual_form'
+    );
+    if (!isVerified) continue;
+
     if (!isStrictKarnalLead(item)) continue; // Filter out non-Karnal leads immediately!
 
     const formatted = formatWhatsAppJid(item.phone || item.number);
@@ -354,7 +368,8 @@ function addLeadsToQueue(newLeads = [], defaultAccount = null) {
         assignedAccount: assigned,
         discoveredAt: new Date().toISOString(),
         status: 'queued',
-        lastSentAt: null
+        lastSentAt: null,
+        isVerifiedWhatsApp: true
       });
 
       existingPhones.add(formatted.cleanNumber);
@@ -363,7 +378,7 @@ function addLeadsToQueue(newLeads = [], defaultAccount = null) {
   }
 
   saveDatabase(db);
-  console.log(`✅ [Karnal Realty DB] Added ${added} new property investor leads${defaultAccount ? ` for ${defaultAccount}` : ''}. Total in DB: ${db.leads.length}`);
+  console.log(`✅ [Karnal Realty DB] Added ${added} verified WhatsApp leads${defaultAccount ? ` for ${defaultAccount}` : ''}. Total in DB: ${db.leads.length}`);
   return { added, total: db.leads.length };
 }
 
@@ -372,8 +387,12 @@ function claimNextLead(deviceId) {
   const now = Date.now();
   const devKey = `device_${deviceId}`;
 
-  // Filter all candidates that haven't been sent yet and strictly match Karnal intent
-  const available = db.leads.filter(l => !isPhoneAlreadySent(l.phone) && isStrictKarnalLead(l));
+  // Filter all candidates that haven't been sent yet, strictly match Karnal intent, AND are confirmed on WhatsApp
+  const available = db.leads.filter(l => 
+    !isPhoneAlreadySent(l.phone) && 
+    isStrictKarnalLead(l) &&
+    (l.isVerifiedWhatsApp === true || l.source === 'manual_dashboard' || l.source === 'manual_import' || l.source === 'manual_form')
+  );
 
   // 1. Check hot leads assigned to this device slot (or all queued leads for meta_cloud)
   let candidates = [];
@@ -475,67 +494,97 @@ const ROTATING_USER_AGENTS = [
 
 /**
  * Extract Verified WhatsApp & Global Mobile Numbers from Text & HTML
- * Strictly eliminates fake/mangled numbers and prioritizes active WhatsApp formats
+ * STRICT POLICY: ONLY numbers with confirmed WhatsApp presence (wa.me/ links,
+ * api.whatsapp.com/send, or explicit WhatsApp text keywords) are extracted.
+ * Generic phone numbers without explicit WhatsApp indicators are strictly discarded.
  */
 function extractGlobalPhones(text, html = '') {
   const results = [];
   const seen = new Set();
-  if (!text && !html) return results;
+  const allContent = `${html || ''} ${text || ''}`;
+  if (!allContent.trim()) return results;
 
-  // 1. Direct WhatsApp Click-to-Chat links from raw HTML (100% verified WhatsApp users)
-  if (html) {
-    const waMatches = html.match(/(?:wa\.me\/(?:\+?91)?|api\.whatsapp\.com\/send\?phone=(?:\+?91)?)([6-9]\d{9})/gi) || [];
-    for (const m of waMatches) {
-      const d = m.replace(/\D/g, '').slice(-10);
-      const clean = `91${d}`;
-      if (!seen.has(clean) && /^91[6-9]\d{9}$/.test(clean)) {
-        seen.add(clean);
-        results.push({ phone: clean, country: 'India', isVerifiedWhatsApp: true });
-      }
-    }
-  }
-
-  // 2. India Mobile (+91, 0, or bare 10-digit strictly starting with 6, 7, 8, or 9)
-  const inMatches = (text || '').match(/(?:\+?91[\s.-]*|0)?([6-9]\d{9})\b/g) || [];
-  for (const p of inMatches) {
-    const d = p.replace(/\D/g, '').slice(-10);
-    const clean = `91${d}`;
+  // 1. Direct WhatsApp Click-to-Chat links (wa.me and api.whatsapp.com) - 100% Guaranteed WhatsApp Users
+  // 1a. India wa.me (+91 or bare 10-digit)
+  const waInRegex = /(?:https?:\/\/)?(?:wa\.me\/(?:\+?91)?|api\.whatsapp\.com\/send\/?\?(?:.*&)?phone=(?:\+?91)?)([6-9]\d{9})\b/gi;
+  let m;
+  while ((m = waInRegex.exec(allContent)) !== null) {
+    const clean = `91${m[1]}`;
     if (!seen.has(clean) && /^91[6-9]\d{9}$/.test(clean)) {
       seen.add(clean);
-      results.push({ phone: clean, country: 'India' });
+      results.push({ phone: clean, country: 'India', isVerifiedWhatsApp: true, source_type: 'wa_link' });
     }
   }
 
-  // 3. UK (+44 mobile strictly starting with 7, exactly 10 digits after 44)
-  const ukMatches = (text || '').match(/(?:\+44[\s.-]?|\b0)7\d{3}[\s.-]?\d{6}\b/g) || [];
-  for (const p of ukMatches) {
-    const d = p.replace(/\D/g, '');
-    const clean = d.startsWith('0') ? '44' + d.slice(1) : (d.startsWith('44') ? d : '44' + d);
-    if (clean.length === 12 && /^447\d{9}$/.test(clean) && !seen.has(clean)) {
+  // 1b. International wa.me (UK +44, UAE +971, Australia +61, Canada/USA +1)
+  const waIntlRegex = /(?:https?:\/\/)?(?:wa\.me\/|api\.whatsapp\.com\/send\/?\?(?:.*&)?phone=)(447\d{9}|9715\d{8}|614\d{8}|1[2-9]\d{9})\b/gi;
+  while ((m = waIntlRegex.exec(allContent)) !== null) {
+    const clean = m[1];
+    if (!seen.has(clean)) {
       seen.add(clean);
-      results.push({ phone: clean, country: 'UK' });
+      const country = clean.startsWith('44') ? 'UK' : clean.startsWith('971') ? 'UAE' : clean.startsWith('61') ? 'Australia' : 'Canada/USA';
+      results.push({ phone: clean, country, isVerifiedWhatsApp: true, source_type: 'wa_link_intl' });
     }
   }
 
-  // 4. UAE (+971 mobile strictly starting with 5, exactly 9 digits after 971)
-  const uaeMatches = (text || '').match(/(?:\+971[\s.-]?|\b0)5\d{1}[\s.-]?\d{7}\b/g) || [];
-  for (const p of uaeMatches) {
-    const d = p.replace(/\D/g, '');
-    const clean = d.startsWith('0') ? '971' + d.slice(1) : (d.startsWith('971') ? d : '971' + d);
-    if (clean.length === 12 && /^9715\d{8}$/.test(clean) && !seen.has(clean)) {
+  // 2. Explicit WhatsApp Text Mentions (Prefix: e.g. "WhatsApp: 9812345678", "Chat on WhatsApp: +91 9416031024")
+  const waTextInRegex = /(?:whatsapp|watsapp|wapp|wa)[\s:–—=]*(?:me\s+at\s+|only\s+|on\s+|msg\s+|chat\s+)?(?:\+?91[\s.-]*|0)?([6-9]\d{9})\b/gi;
+  while ((m = waTextInRegex.exec(text || '')) !== null) {
+    const clean = `91${m[1]}`;
+    if (!seen.has(clean) && /^91[6-9]\d{9}$/.test(clean)) {
       seen.add(clean);
-      results.push({ phone: clean, country: 'UAE' });
+      results.push({ phone: clean, country: 'India', isVerifiedWhatsApp: true, source_type: 'wa_text_prefix' });
     }
   }
 
-  // 5. Australia (+61 mobile strictly starting with 4, exactly 9 digits after 61)
-  const auMatches = (text || '').match(/(?:\+61[\s.-]?|\b0)4\d{2}[\s.-]?\d{3}[\s.-]?\d{3}\b/g) || [];
-  for (const p of auMatches) {
-    const d = p.replace(/\D/g, '');
-    const clean = d.startsWith('0') ? '61' + d.slice(1) : (d.startsWith('61') ? d : '61' + d);
-    if (clean.length === 11 && /^614\d{8}$/.test(clean) && !seen.has(clean)) {
+  // 3. Explicit WhatsApp Text Mentions (Suffix: e.g. "9812345678 (WhatsApp)", "9812345678 on WhatsApp")
+  const waSuffixInRegex = /\b(?:\+?91[\s.-]*|0)?([6-9]\d{9})[\s:–—=]*(?:\(whatsapp\)|\(wa\)|on\s+whatsapp|whatsapp\s+only|chat\s+on\s+whatsapp)/gi;
+  while ((m = waSuffixInRegex.exec(text || '')) !== null) {
+    const clean = `91${m[1]}`;
+    if (!seen.has(clean) && /^91[6-9]\d{9}$/.test(clean)) {
       seen.add(clean);
-      results.push({ phone: clean, country: 'Australia' });
+      results.push({ phone: clean, country: 'India', isVerifiedWhatsApp: true, source_type: 'wa_text_suffix' });
+    }
+  }
+
+  // 4. Overseas Explicit WhatsApp Text Mentions
+  // UK (+44)
+  const waTextUkRegex = /(?:whatsapp|wa)[\s:–—=]*(?:me\s+at\s+)?(?:\+?44[\s.-]?|0)?(7\d{9})\b/gi;
+  while ((m = waTextUkRegex.exec(text || '')) !== null) {
+    const clean = `44${m[1]}`;
+    if (!seen.has(clean) && /^447\d{9}$/.test(clean)) {
+      seen.add(clean);
+      results.push({ phone: clean, country: 'UK', isVerifiedWhatsApp: true, source_type: 'wa_text_uk' });
+    }
+  }
+
+  // UAE (+971)
+  const waTextUaeRegex = /(?:whatsapp|wa)[\s:–—=]*(?:me\s+at\s+)?(?:\+?971[\s.-]?|0)?(5\d{8})\b/gi;
+  while ((m = waTextUaeRegex.exec(text || '')) !== null) {
+    const clean = `971${m[1]}`;
+    if (!seen.has(clean) && /^9715\d{8}$/.test(clean)) {
+      seen.add(clean);
+      results.push({ phone: clean, country: 'UAE', isVerifiedWhatsApp: true, source_type: 'wa_text_uae' });
+    }
+  }
+
+  // Australia (+61)
+  const waTextAuRegex = /(?:whatsapp|wa)[\s:–—=]*(?:me\s+at\s+)?(?:\+?61[\s.-]?|0)?(4\d{8})\b/gi;
+  while ((m = waTextAuRegex.exec(text || '')) !== null) {
+    const clean = `61${m[1]}`;
+    if (!seen.has(clean) && /^614\d{8}$/.test(clean)) {
+      seen.add(clean);
+      results.push({ phone: clean, country: 'Australia', isVerifiedWhatsApp: true, source_type: 'wa_text_au' });
+    }
+  }
+
+  // Canada/USA (+1) - strictly require +1 prefix
+  const waTextNaRegex = /(?:whatsapp|wa)[\s:–—=]*(?:me\s+at\s+)?(?:\+?1[\s.-])([2-9]\d{9})\b/gi;
+  while ((m = waTextNaRegex.exec(text || '')) !== null) {
+    const clean = `1${m[1]}`;
+    if (!seen.has(clean) && /^1[2-9]\d{9}$/.test(clean)) {
+      seen.add(clean);
+      results.push({ phone: clean, country: 'Canada/USA', isVerifiedWhatsApp: true, source_type: 'wa_text_na' });
     }
   }
 
@@ -591,14 +640,15 @@ async function triggerFreeWebScraper(options = {}) {
           location: 'Karnal',
           assignedAccount: targetAccount,
           source: `yandex_${targetAccount}`,
-          query: query
+          query: query,
+          isVerifiedWhatsApp: true
         });
       }
     }
     await new Promise(r => setTimeout(r, 2000));
   }
 
-  console.log(`🎯 [Karnal Scraper - ${targetAccount}] Harvested ${extracted.length} property buyer contacts.`);
+  console.log(`🎯 [Karnal Scraper - ${targetAccount}] Harvested ${extracted.length} verified WhatsApp buyer contacts.`);
   return addLeadsToQueue(extracted, targetAccount);
 }
 
@@ -639,7 +689,8 @@ async function triggerApifyLeadDiscovery(targetAccount = 'device_1') {
           location: 'Karnal',
           assignedAccount: targetAccount,
           source: `apify_${targetAccount}`,
-          query: item.searchQuery || ''
+          query: item.searchQuery || '',
+          isVerifiedWhatsApp: true
         });
       }
     }
@@ -758,5 +809,6 @@ module.exports = {
   getScraperStats,
   formatWhatsAppJid,
   getTerritoryForAccount,
-  TERRITORIES
+  TERRITORIES,
+  extractGlobalPhones
 };

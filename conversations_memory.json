@@ -1,1 +1,1274 @@
-{}
+{
+  "919416085989": {
+    "phone": "919416085989",
+    "profile": {
+      "name": "VIP Investor",
+      "city": "Karnal",
+      "propertyInterest": "Commercial SCO / Plots",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794927697838,
+      "lastActive": 1794927697838
+    },
+    "messages": [
+      {
+        "id": "out_1794927697838",
+        "role": "assistant",
+        "content": "Namaste sir ji, Karnal Realty se connect kar rahe hain...",
+        "timestamp": 1794927697838,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "918708450639": {
+    "phone": "918708450639",
+    "profile": {
+      "name": "VIP Investor",
+      "city": "Karnal",
+      "propertyInterest": "Commercial SCO / Plots",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794927801738,
+      "lastActive": 1794927801738
+    },
+    "messages": [
+      {
+        "id": "out_1794927801738",
+        "role": "assistant",
+        "content": "Namaste sir ji, Karnal Realty se connect kar rahe hain...",
+        "timestamp": 1794927801738,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "919778539300": {
+    "phone": "919778539300",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"looking to buy shop\" \"karnal\" \"phone\" OR \"whatsapp\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794929878629,
+      "lastActive": 1794929878629
+    },
+    "messages": [
+      {
+        "id": "out_1794929878629",
+        "role": "assistant",
+        "content": "Namaste ji! Ek chhota sa question tha—kya aap Karnal me commercial booths ya SCO plots handle karte hain?",
+        "timestamp": 1794929878629,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "918317602439": {
+    "phone": "918317602439",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794930253925,
+      "lastActive": 1794930253925
+    },
+    "messages": [
+      {
+        "id": "out_1794930253925",
+        "role": "assistant",
+        "content": "Namaste ji! Wanted to ask if you have any commercial or residential property inventory in Karnal right now?",
+        "timestamp": 1794930253925,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "919940840983": {
+    "phone": "919940840983",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794930570629,
+      "lastActive": 1794930570629
+    },
+    "messages": [
+      {
+        "id": "out_1794930570629",
+        "role": "assistant",
+        "content": "Ram Ram ji! Aapka Karnal me koi commercial space ya residential plot sale ya lease ke liye available hai kya?",
+        "timestamp": 1794930570629,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "917225904750": {
+    "phone": "917225904750",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794930859645,
+      "lastActive": 1794930859645
+    },
+    "messages": [
+      {
+        "id": "out_1794930859645",
+        "role": "assistant",
+        "content": "Hello ji! Quick question, kya aapka Karnal me koi commercial plot ya property available hai?",
+        "timestamp": 1794930859645,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "18317602439": {
+    "phone": "18317602439",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794931195670,
+      "lastActive": 1794931195670
+    },
+    "messages": [
+      {
+        "id": "out_1794931195670",
+        "role": "assistant",
+        "content": "Good day! Wanted to ask if you guys handle commercial or residential properties along the Karnal GT Road corridor?",
+        "timestamp": 1794931195670,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "17225904750": {
+    "phone": "17225904750",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794931581344,
+      "lastActive": 1794931581344
+    },
+    "messages": [
+      {
+        "id": "out_1794931581344",
+        "role": "assistant",
+        "content": "Greetings! Wanted to ask if you guys handle commercial or residential properties along the Karnal GT Road corridor?",
+        "timestamp": 1794931581344,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "919965481178": {
+    "phone": "919965481178",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794931985921,
+      "lastActive": 1794931985922
+    },
+    "messages": [
+      {
+        "id": "out_1794931985922",
+        "role": "assistant",
+        "content": "Hello ji! Wanted to ask if you have any commercial or residential property inventory in Karnal right now?",
+        "timestamp": 1794931985922,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "917553907340": {
+    "phone": "917553907340",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794932355237,
+      "lastActive": 1794932355237
+    },
+    "messages": [
+      {
+        "id": "out_1794932355237",
+        "role": "assistant",
+        "content": "Namaste ji, Wanted to ask if you have any commercial or residential property inventory in Karnal right now?",
+        "timestamp": 1794932355237,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "12819535457": {
+    "phone": "12819535457",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1794934213894,
+      "lastActive": 1794934213894
+    },
+    "messages": [
+      {
+        "id": "out_1794934213894",
+        "role": "assistant",
+        "content": "Hi there! Wanted to check if you have any commercial spaces or plots available in Karnal right now?",
+        "timestamp": 1794934213894,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "19965481178": {
+    "phone": "19965481178",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795174761447,
+      "lastActive": 1795174761447
+    },
+    "messages": [
+      {
+        "id": "out_1795174761447",
+        "role": "assistant",
+        "content": "Hello! Quick question—do you guys currently manage or deal in commercial SCO plots in the Karnal area?",
+        "timestamp": 1795174761447,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "17553907340": {
+    "phone": "17553907340",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795175048311,
+      "lastActive": 1795175048311
+    },
+    "messages": [
+      {
+        "id": "out_1795175048311",
+        "role": "assistant",
+        "content": "Greetings! Quick question—do you guys currently manage or deal in commercial SCO plots in the Karnal area?",
+        "timestamp": 1795175048311,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "916409593682": {
+    "phone": "916409593682",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795175388031,
+      "lastActive": 1795175388031
+    },
+    "messages": [
+      {
+        "id": "out_1795175388031",
+        "role": "assistant",
+        "content": "Namaste ji, Ek chhota sa question tha—kya aap Karnal me commercial booths ya SCO plots handle karte hain?",
+        "timestamp": 1795175388031,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "14343700139": {
+    "phone": "14343700139",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795175798537,
+      "lastActive": 1795175798537
+    },
+    "messages": [
+      {
+        "id": "out_1795175798537",
+        "role": "assistant",
+        "content": "Hello! Quick question—do you guys currently manage or deal in commercial SCO plots in the Karnal area?",
+        "timestamp": 1795175798537,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "16409593682": {
+    "phone": "16409593682",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795176102469,
+      "lastActive": 1795176102469
+    },
+    "messages": [
+      {
+        "id": "out_1795176102469",
+        "role": "assistant",
+        "content": "Hi there! Wanted to check if you have any commercial spaces or plots available in Karnal right now?",
+        "timestamp": 1795176102471,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "917038369294": {
+    "phone": "917038369294",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795176445874,
+      "lastActive": 1795176445874
+    },
+    "messages": [
+      {
+        "id": "out_1795176445874",
+        "role": "assistant",
+        "content": "Namaste ji! Ek quick inquiry thi, kya aap Karnal (Sector 12 / GT Road corridor) me SCO spaces ya plots me deal karte hain?",
+        "timestamp": 1795176445874,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "917276794767": {
+    "phone": "917276794767",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795176830145,
+      "lastActive": 1795176830145
+    },
+    "messages": [
+      {
+        "id": "out_1795176830145",
+        "role": "assistant",
+        "content": "Ram Ram ji! Wanted to check—kya aapka Karnal me commercial space ya residential plot sale ke liye hai?",
+        "timestamp": 1795176830145,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "17038369294": {
+    "phone": "17038369294",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795177203686,
+      "lastActive": 1795177203686
+    },
+    "messages": [
+      {
+        "id": "out_1795177203686",
+        "role": "assistant",
+        "content": "Hello! Quick inquiry—do you currently deal in prime property investments or SCO plots around Karnal?",
+        "timestamp": 1795177203686,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "17276794767": {
+    "phone": "17276794767",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795177573211,
+      "lastActive": 1795177573211
+    },
+    "messages": [
+      {
+        "id": "out_1795177573211",
+        "role": "assistant",
+        "content": "Hi there! Quick inquiry—do you currently deal in prime property investments or SCO plots around Karnal?",
+        "timestamp": 1795177573211,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "916507388279": {
+    "phone": "916507388279",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795177941261,
+      "lastActive": 1795177941261
+    },
+    "messages": [
+      {
+        "id": "out_1795177941261",
+        "role": "assistant",
+        "content": "Ram Ram ji! Ek quick inquiry thi, kya aap Karnal (Sector 12 / GT Road corridor) me SCO spaces ya plots me deal karte hain?",
+        "timestamp": 1795177941261,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "13404502783": {
+    "phone": "13404502783",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795178447714,
+      "lastActive": 1795178447714
+    },
+    "messages": [
+      {
+        "id": "out_1795178447714",
+        "role": "assistant",
+        "content": "Hello! Wanted to ask if you guys handle commercial or residential properties along the Karnal GT Road corridor?",
+        "timestamp": 1795178447714,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "16507388279": {
+    "phone": "16507388279",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795179335532,
+      "lastActive": 1795179335532
+    },
+    "messages": [
+      {
+        "id": "out_1795179335532",
+        "role": "assistant",
+        "content": "Hello! Quick check—are you currently taking on or managing property assets in Karnal?",
+        "timestamp": 1795179335532,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "918612868004": {
+    "phone": "918612868004",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795179676428,
+      "lastActive": 1795179676428
+    },
+    "messages": [
+      {
+        "id": "out_1795179676428",
+        "role": "assistant",
+        "content": "Namaste ji! Wanted to check—kya aapka Karnal me commercial space ya residential plot sale ke liye hai?",
+        "timestamp": 1795179676428,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "919662394192": {
+    "phone": "919662394192",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795180028110,
+      "lastActive": 1795180028110
+    },
+    "messages": [
+      {
+        "id": "out_1795180028110",
+        "role": "assistant",
+        "content": "Namaste ji, Ek chhota sa question tha—kya aap Karnal me commercial booths ya SCO plots handle karte hain?",
+        "timestamp": 1795180028110,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "14614815140": {
+    "phone": "14614815140",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795180392172,
+      "lastActive": 1795180392172
+    },
+    "messages": [
+      {
+        "id": "out_1795180392172",
+        "role": "assistant",
+        "content": "Good day! Quick check—are you currently taking on or managing property assets in Karnal?",
+        "timestamp": 1795180392172,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "18612868004": {
+    "phone": "18612868004",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795180768745,
+      "lastActive": 1795180768745
+    },
+    "messages": [
+      {
+        "id": "out_1795180768745",
+        "role": "assistant",
+        "content": "Hi there! Wanted to ask if you guys handle commercial or residential properties along the Karnal GT Road corridor?",
+        "timestamp": 1795180768745,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "19662394192": {
+    "phone": "19662394192",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795181057049,
+      "lastActive": 1795181057049
+    },
+    "messages": [
+      {
+        "id": "out_1795181057049",
+        "role": "assistant",
+        "content": "Hello! Wanted to ask if you guys handle commercial or residential properties along the Karnal GT Road corridor?",
+        "timestamp": 1795181057049,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "15585913544": {
+    "phone": "15585913544",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795181451974,
+      "lastActive": 1795181451974
+    },
+    "messages": [
+      {
+        "id": "out_1795181451974",
+        "role": "assistant",
+        "content": "Greetings! Wanted to ask if you guys handle commercial or residential properties along the Karnal GT Road corridor?",
+        "timestamp": 1795181451974,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "15399218361": {
+    "phone": "15399218361",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795181816780,
+      "lastActive": 1795181816780
+    },
+    "messages": [
+      {
+        "id": "out_1795181816780",
+        "role": "assistant",
+        "content": "Hi there! Quick question—do you guys currently manage or deal in commercial SCO plots in the Karnal area?",
+        "timestamp": 1795181816780,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "61411825307": {
+    "phone": "61411825307",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795182147489,
+      "lastActive": 1795182147489
+    },
+    "messages": [
+      {
+        "id": "out_1795182147489",
+        "role": "assistant",
+        "content": "Good day! Quick inquiry—do you currently deal in prime property investments or SCO plots around Karnal?",
+        "timestamp": 1795182147489,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "918059774468": {
+    "phone": "918059774468",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795182495799,
+      "lastActive": 1795182495799
+    },
+    "messages": [
+      {
+        "id": "out_1795182495799",
+        "role": "assistant",
+        "content": "Namaste ji, Ek quick inquiry thi, kya aap Karnal (Sector 12 / GT Road corridor) me SCO spaces ya plots me deal karte hain?",
+        "timestamp": 1795182495799,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "18059774468": {
+    "phone": "18059774468",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795182786542,
+      "lastActive": 1795182786542
+    },
+    "messages": [
+      {
+        "id": "out_1795182786542",
+        "role": "assistant",
+        "content": "Good day! Quick inquiry—do you currently deal in prime property investments or SCO plots around Karnal?",
+        "timestamp": 1795182786542,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "15676462906": {
+    "phone": "15676462906",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795183422241,
+      "lastActive": 1795183422241
+    },
+    "messages": [
+      {
+        "id": "out_1795183422241",
+        "role": "assistant",
+        "content": "Greetings! Quick question—do you guys currently manage or deal in commercial SCO plots in the Karnal area?",
+        "timestamp": 1795183422241,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "61439306448": {
+    "phone": "61439306448",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795183806909,
+      "lastActive": 1795183806909
+    },
+    "messages": [
+      {
+        "id": "out_1795183806909",
+        "role": "assistant",
+        "content": "Hello! Quick question—do you guys currently manage or deal in commercial SCO plots in the Karnal area?",
+        "timestamp": 1795183806909,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "12543742682": {
+    "phone": "12543742682",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795184583977,
+      "lastActive": 1795184583977
+    },
+    "messages": [
+      {
+        "id": "out_1795184583977",
+        "role": "assistant",
+        "content": "Hi there! Quick inquiry—do you currently deal in prime property investments or SCO plots around Karnal?",
+        "timestamp": 1795184583977,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "971570017999": {
+    "phone": "971570017999",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795185469160,
+      "lastActive": 1795185469160
+    },
+    "messages": [
+      {
+        "id": "out_1795185469160",
+        "role": "assistant",
+        "content": "Good day! Wanted to ask if you guys handle commercial or residential properties along the Karnal GT Road corridor?",
+        "timestamp": 1795185469160,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "917307703722": {
+    "phone": "917307703722",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795185817194,
+      "lastActive": 1795185817194
+    },
+    "messages": [
+      {
+        "id": "out_1795185817194",
+        "role": "assistant",
+        "content": "Namaste ji! Quick check with you—kya aap Karnal area me commercial shops ya plots deal karte hain?",
+        "timestamp": 1795185817194,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "14164670005": {
+    "phone": "14164670005",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795186164630,
+      "lastActive": 1795186164630
+    },
+    "messages": [
+      {
+        "id": "out_1795186164630",
+        "role": "assistant",
+        "content": "Good day! Quick question—do you guys currently manage or deal in commercial SCO plots in the Karnal area?",
+        "timestamp": 1795186164630,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "17307703722": {
+    "phone": "17307703722",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795186506895,
+      "lastActive": 1795186506895
+    },
+    "messages": [
+      {
+        "id": "out_1795186506895",
+        "role": "assistant",
+        "content": "Hello! Quick check—are you currently taking on or managing property assets in Karnal?",
+        "timestamp": 1795186506895,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "971593713398": {
+    "phone": "971593713398",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795186849286,
+      "lastActive": 1795186849286
+    },
+    "messages": [
+      {
+        "id": "out_1795186849286",
+        "role": "assistant",
+        "content": "Hi there! Wanted to check if you have any commercial spaces or plots available in Karnal right now?",
+        "timestamp": 1795186849286,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "14674409132": {
+    "phone": "14674409132",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795187132447,
+      "lastActive": 1795187132447
+    },
+    "messages": [
+      {
+        "id": "out_1795187132447",
+        "role": "assistant",
+        "content": "Hi there! Quick check—are you currently taking on or managing property assets in Karnal?",
+        "timestamp": 1795187132447,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "12516376580": {
+    "phone": "12516376580",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795187428870,
+      "lastActive": 1795187428870
+    },
+    "messages": [
+      {
+        "id": "out_1795187428870",
+        "role": "assistant",
+        "content": "Hello! Wanted to ask if you guys handle commercial or residential properties along the Karnal GT Road corridor?",
+        "timestamp": 1795187428870,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "917033534158": {
+    "phone": "917033534158",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795187784006,
+      "lastActive": 1795187784006
+    },
+    "messages": [
+      {
+        "id": "out_1795187784006",
+        "role": "assistant",
+        "content": "Namaste ji! Ek quick inquiry thi, kya aap Karnal (Sector 12 / GT Road corridor) me SCO spaces ya plots me deal karte hain?",
+        "timestamp": 1795187784006,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "916047203461": {
+    "phone": "916047203461",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795188080825,
+      "lastActive": 1795188080825
+    },
+    "messages": [
+      {
+        "id": "out_1795188080825",
+        "role": "assistant",
+        "content": "Ram Ram ji! Ek chhota sa question tha—kya aap Karnal me commercial booths ya SCO plots handle karte hain?",
+        "timestamp": 1795188080825,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "17033534158": {
+    "phone": "17033534158",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795188385680,
+      "lastActive": 1795188385680
+    },
+    "messages": [
+      {
+        "id": "out_1795188385680",
+        "role": "assistant",
+        "content": "Hi there! Wanted to check if you have any commercial spaces or plots available in Karnal right now?",
+        "timestamp": 1795188385680,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "16047203461": {
+    "phone": "16047203461",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795188698459,
+      "lastActive": 1795188698459
+    },
+    "messages": [
+      {
+        "id": "out_1795188698459",
+        "role": "assistant",
+        "content": "Good day! Quick check—are you currently taking on or managing property assets in Karnal?",
+        "timestamp": 1795188698459,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "917117334113": {
+    "phone": "917117334113",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795189001966,
+      "lastActive": 1795189001966
+    },
+    "messages": [
+      {
+        "id": "out_1795189001966",
+        "role": "assistant",
+        "content": "Ram Ram ji! Quick check with you—kya aap Karnal area me commercial shops ya plots deal karte hain?",
+        "timestamp": 1795189001966,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "919895160286": {
+    "phone": "919895160286",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795189362953,
+      "lastActive": 1795189362953
+    },
+    "messages": [
+      {
+        "id": "out_1795189362953",
+        "role": "assistant",
+        "content": "Namaste ji! Wanted to inquire, do you guys have any commercial SCO or residential plots available around Karnal?",
+        "timestamp": 1795189362953,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "17117334113": {
+    "phone": "17117334113",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "NRI Diaspora",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795189664940,
+      "lastActive": 1795189664940
+    },
+    "messages": [
+      {
+        "id": "out_1795189664940",
+        "role": "assistant",
+        "content": "Hello! Wanted to check if you have any commercial spaces or plots available in Karnal right now?",
+        "timestamp": 1795189664940,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "919588207343": {
+    "phone": "919588207343",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795261251047,
+      "lastActive": 1795261251047
+    },
+    "messages": [
+      {
+        "id": "out_1795261251047",
+        "role": "assistant",
+        "content": "Ram Ram ji! Quick check with you—kya aap Karnal area me commercial shops ya plots deal karte hain?",
+        "timestamp": 1795261251047,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "919058739367": {
+    "phone": "919058739367",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"want to buy\" \"Karnal SCO\" \"contact\" OR \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795261593679,
+      "lastActive": 1795261593679
+    },
+    "messages": [
+      {
+        "id": "out_1795261593679",
+        "role": "assistant",
+        "content": "Hello ji! Ek quick inquiry thi, kya aap Karnal (Sector 12 / GT Road corridor) me SCO spaces ya plots me deal karte hain?",
+        "timestamp": 1795261593679,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "919242277497": {
+    "phone": "919242277497",
+    "profile": {
+      "name": "Prospective Investor",
+      "city": "Karnal",
+      "propertyInterest": "\"NRI investor\" \"buying SCO plot\" \"Karnal\" (\"+44\" OR \"UK\") \"call\"",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795261900681,
+      "lastActive": 1795261900681
+    },
+    "messages": [
+      {
+        "id": "out_1795261900681",
+        "role": "assistant",
+        "content": "Namaste ji, Wanted to inquire, do you guys have any commercial SCO or residential plots available around Karnal?",
+        "timestamp": 1795261900682,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  }
+}

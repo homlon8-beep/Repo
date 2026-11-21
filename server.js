@@ -1731,7 +1731,14 @@ app.post('/api/leads/add-form', (req, res) => {
   for (const line of lines) {
     const trimmed = line.trim();
     if (trimmed) {
-      leads.push({ phone: trimmed, source: 'manual_dashboard' });
+      leads.push({
+        phone: trimmed,
+        source: 'manual_dashboard',
+        isVerifiedWhatsApp: true,
+        isHotLead: true,
+        segment: '🔥 Direct Client Buyer',
+        location: 'Karnal'
+      });
     }
   }
 

@@ -639,13 +639,14 @@ async function runMetaCloudWorker() {
     // 4. Claim next unassigned lead
     let lead = scraper.claimNextLead('meta_cloud');
     if (!lead) {
-      metaCloudState.currentStatus = 'Queue Empty: Harvesting fresh Karnal commercial & NRI property leads...';
+      metaCloudState.currentStatus = 'Queue Idle: Harvesting verified WhatsApp leads (wa.me/ links)...';
       try {
-        await scraper.triggerFreeWebScraper({ targetCount: 40, deviceId: 1 });
+        await scraper.triggerFreeWebScraper({ targetCount: 20, deviceId: 1 });
       } catch (err) {}
       lead = scraper.claimNextLead('meta_cloud');
       if (!lead) {
-        await sleep(10000);
+        metaCloudState.currentStatus = 'Queue Idle: No verified WhatsApp leads in queue. Paste active buyer numbers in dashboard or wait for harvest.';
+        await sleep(15000);
         continue;
       }
     }
@@ -657,7 +658,7 @@ async function runMetaCloudWorker() {
       continue;
     }
 
-    // 6. Strict WhatsApp Phone Validation & Duplicate Shield
+    // 6. Strict WhatsApp Phone Validation & Verified WhatsApp Check
     const digits = String(lead.phone).replace(/\D/g, '');
     let cleanPhone = digits;
     if (digits.length === 10 && /^[6-9]/.test(digits)) {
@@ -666,13 +667,26 @@ async function runMetaCloudWorker() {
       cleanPhone = `91${digits.slice(1)}`;
     }
 
-    // Must strictly be valid Indian mobile (91 + [6-9] + 9 digits) or verified NRI mobile (UK/UAE/Aus)
+    // Must strictly be valid Indian mobile (91 + [6-9] + 9 digits) or verified NRI mobile (UK/UAE/Aus/US)
     const isValidIndianMobile = /^91[6-9]\d{9}$/.test(cleanPhone);
-    const isValidNriMobile = /^(?:447\d{9}|9715\d{8}|614\d{8})$/.test(cleanPhone);
+    const isValidNriMobile = /^(?:447\d{9}|9715\d{8}|614\d{8}|1[2-9]\d{9})$/.test(cleanPhone);
 
     if (!isValidIndianMobile && !isValidNriMobile) {
       console.log(`⏩ [WhatsApp Guard] Skipped invalid/non-WhatsApp number +${cleanPhone}`);
       scraper.updateLeadStatus(lead.phone, 'invalid_number', 'Not a valid WhatsApp mobile format', 'meta_cloud');
+      continue;
+    }
+
+    // Strictly enforce WhatsApp verified flag
+    const isVerifiedLead = Boolean(
+      lead.isVerifiedWhatsApp ||
+      lead.source === 'manual_dashboard' ||
+      lead.source === 'manual_import' ||
+      lead.source === 'manual_form'
+    );
+    if (!isVerifiedLead) {
+      console.log(`🛡️ [Skipping Unverified Lead] +${cleanPhone} lacks verified WhatsApp proof. Discarding.`);
+      scraper.updateLeadStatus(lead.phone, 'skipped_unverified', 'Not verified on WhatsApp', 'meta_cloud');
       continue;
     }
 
