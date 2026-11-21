@@ -553,11 +553,15 @@
       "query": "Karnal SCO plot buyer",
       "isHotLead": false,
       "priority": 50,
-      "assignedAccount": null,
+      "assignedAccount": "device_meta_cloud",
       "discoveredAt": "2026-11-21T12:04:38.725Z",
-      "status": "queued",
-      "lastSentAt": null,
-      "isVerifiedWhatsApp": true
+      "status": "sent",
+      "lastSentAt": "2026-11-21T12:10:46.654Z",
+      "isVerifiedWhatsApp": true,
+      "claimed_by": "meta_cloud",
+      "claimed_at": 1795263045508,
+      "handledByDevice": "meta_cloud",
+      "updated_at": 1795263046655
     },
     {
       "phone": "919416031024",
@@ -570,12 +574,16 @@
       "query": "Sector 12 commercial plot",
       "isHotLead": true,
       "priority": 75,
-      "assignedAccount": null,
+      "assignedAccount": "device_meta_cloud",
       "discoveredAt": "2026-11-21T12:04:38.728Z",
-      "status": "queued",
-      "lastSentAt": null,
-      "isVerifiedWhatsApp": true
+      "status": "sent",
+      "lastSentAt": "2026-11-21T12:05:22.215Z",
+      "isVerifiedWhatsApp": true,
+      "claimed_by": "meta_cloud",
+      "claimed_at": 1795262721015,
+      "handledByDevice": "meta_cloud",
+      "updated_at": 1795262722215
     }
   ],
-  "sentCount": 51
+  "sentCount": 53
 }

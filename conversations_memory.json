@@ -1270,5 +1270,53 @@
         "status": "sent"
       }
     ]
+  },
+  "919416031024": {
+    "phone": "919416031024",
+    "profile": {
+      "name": "Karnal Property Investor",
+      "city": "Karnal",
+      "propertyInterest": "Sector 12 commercial plot",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795262722217,
+      "lastActive": 1795262722217
+    },
+    "messages": [
+      {
+        "id": "out_1795262722217",
+        "role": "assistant",
+        "content": "Namaste ji! Ek quick inquiry thi, kya aap Karnal (Sector 12 / GT Road corridor) me SCO spaces ya plots me deal karte hain?",
+        "timestamp": 1795262722218,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
+  },
+  "919355312345": {
+    "phone": "919355312345",
+    "profile": {
+      "name": "Karnal Commercial Buyer",
+      "city": "Karnal",
+      "propertyInterest": "Karnal SCO plot buyer",
+      "stage": "outreach_sent",
+      "leadType": "Domestic",
+      "sentiment": "NEUTRAL",
+      "inquiriesReceived": 0,
+      "createdAt": 1795263046659,
+      "lastActive": 1795263046659
+    },
+    "messages": [
+      {
+        "id": "out_1795263046659",
+        "role": "assistant",
+        "content": "Ram Ram ji! Wanted to check—kya aapka Karnal me commercial space ya residential plot sale ke liye hai?",
+        "timestamp": 1795263046659,
+        "isInitialOutreach": true,
+        "status": "sent"
+      }
+    ]
   }
 }

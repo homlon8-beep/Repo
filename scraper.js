@@ -201,12 +201,10 @@ const TERRITORIES = {
     focus: 'hot_commercial_sco',
     locations: ['GT Road', 'Sector 12', 'Model Town', 'Namaste Chowk', 'Sector 8', 'Sector 9'],
     queries: [
-      'site:wa.me/91 "karnal"',
-      '"wa.me/91" "karnal" ("commercial" OR "SCO" OR "plot")',
-      '"api.whatsapp.com/send?phone=91" "karnal"',
-      '"WhatsApp me" "karnal" ("commercial plot" OR "SCO plot")',
-      '"chat.whatsapp.com" "karnal property"',
-      '"WhatsApp:" "karnal" ("want to buy" OR "commercial plot")'
+      'karnal property dealer whatsapp contact',
+      'karnal commercial property contact whatsapp',
+      'karnal SCO plot dealer whatsapp',
+      'karnal plot for sale whatsapp'
     ]
   },
   device_2: {
@@ -214,11 +212,9 @@ const TERRITORIES = {
     focus: 'hot_retail_investors',
     locations: ['Mughal Canal', 'Kunjpura Road', 'Mall Road', 'Railway Road', 'Sector 13'],
     queries: [
-      '"wa.me/91" "karnal" ("shop" OR "showroom" OR "retail")',
-      'site:wa.me/91 "mughal canal" OR "kunjpura road"',
-      '"WhatsApp me" "karnal" ("shop" OR "showroom")',
-      '"WhatsApp:" "karnal" "mughal canal" ("buyer" OR "shop")',
-      '"api.whatsapp.com/send?phone=91" ("karnal shop" OR "karnal retail")'
+      'karnal shop showroom mughal canal whatsapp',
+      'karnal retail commercial space contact whatsapp',
+      'karnal sector 13 shop for sale whatsapp'
     ]
   },
   device_3: {
@@ -226,10 +222,9 @@ const TERRITORIES = {
     focus: 'hot_nri_canada_us',
     locations: ['Brampton', 'Surrey', 'Toronto', 'Calgary', 'Vancouver', 'New York'],
     queries: [
-      'site:wa.me/1 "karnal"',
-      'site:facebook.com ("Canada" OR "Brampton") "wa.me/91" "karnal"',
-      '"wa.me/1" ("invest in karnal" OR "karnal property" OR "SCO")',
-      '"WhatsApp" ("NRI buyer" OR "Canada NRI") "karnal" ("+1" OR "wa.me")'
+      'karnal NRI property investment whatsapp',
+      'Canada NRI buying plot in Karnal whatsapp',
+      'karnal commercial SCO NRI buyer whatsapp'
     ]
   },
   device_4: {
@@ -237,10 +232,8 @@ const TERRITORIES = {
     focus: 'hot_nri_uk',
     locations: ['London', 'Birmingham', 'Leicester', 'Southall', 'Coventry'],
     queries: [
-      'site:wa.me/44 "karnal"',
-      'site:facebook.com ("London" OR "UK") "wa.me/91" "karnal"',
-      '"wa.me/44" ("buying in karnal" OR "karnal plot" OR "karnal SCO")',
-      '"WhatsApp" ("UK NRI" OR "London") "karnal property"'
+      'UK London NRI invest in Karnal property whatsapp',
+      'NRI buying SCO commercial Karnal whatsapp'
     ]
   },
   device_5: {
@@ -248,10 +241,8 @@ const TERRITORIES = {
     focus: 'hot_nri_aus_uae',
     locations: ['Melbourne', 'Sydney', 'Brisbane', 'Dubai', 'Abu Dhabi', 'Sharjah'],
     queries: [
-      'site:wa.me/971 "karnal"',
-      'site:wa.me/61 "karnal"',
-      'site:facebook.com ("Dubai" OR "UAE" OR "Australia") "wa.me/91" "karnal"',
-      '"wa.me/971" ("karnal commercial" OR "karnal plot")'
+      'Dubai UAE NRI buying plot in Karnal whatsapp',
+      'Australia NRI invest in Karnal commercial whatsapp'
     ]
   },
   device_6: {
@@ -259,11 +250,9 @@ const TERRITORIES = {
     focus: 'hot_domestic_hnw',
     locations: ['Panipat', 'Kurukshetra', 'Ambala', 'Chandigarh', 'Delhi-NCR', 'Karnal'],
     queries: [
-      '"wa.me/91" "karnal" ("sector 32" OR "sector 33" OR "sector 8" OR "sector 9" OR "CHD")',
-      'site:wa.me/91 "karnal plot"',
-      '"WhatsApp me" "karnal" ("residential plot" OR "farmhouse")',
-      '"chat.whatsapp.com" "karnal buyers"',
-      '"api.whatsapp.com/send?phone=91" "karnal" "plot"'
+      'karnal sector 32 33 plot whatsapp',
+      'karnal CHD city alpha city plot contact whatsapp',
+      'karnal farmhouse land for sale whatsapp'
     ]
   }
 };
@@ -588,7 +577,64 @@ function extractGlobalPhones(text, html = '') {
     }
   }
 
+  // 5. Karnal Real Estate Listings with confirmed WhatsApp intent
+  // If the listing explicitly references Karnal property/plots AND explicitly mentions WhatsApp / wa.me
+  const lowerAll = allContent.toLowerCase();
+  const hasWaIntent = lowerAll.includes('whatsapp') || lowerAll.includes('wa.me') || lowerAll.includes('watsapp');
+  const hasKarnalIntent = lowerAll.includes('karnal');
+  if (hasWaIntent && hasKarnalIntent) {
+    const inGeneralRegex = /(?:\+?91[\s.-]*|0)?([6-9]\d{9})\b/g;
+    let gm;
+    while ((gm = inGeneralRegex.exec(allContent)) !== null) {
+      const clean = `91${gm[1]}`;
+      if (!seen.has(clean) && /^91[6-9]\d{9}$/.test(clean)) {
+        seen.add(clean);
+        results.push({ phone: clean, country: 'India', isVerifiedWhatsApp: true, source_type: 'karnal_wa_listing' });
+      }
+    }
+  }
+
   return results;
+}
+
+async function scrapeDuckDuckGo(query) {
+  const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+  const ua = ROTATING_USER_AGENTS[Math.floor(Math.random() * ROTATING_USER_AGENTS.length)];
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(10000),
+      headers: {
+        'User-Agent': ua,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      }
+    });
+    if (!res.ok) return [];
+    const html = await res.text();
+    const stripped = html.replace(/<[^>]+>/g, ' ');
+    return extractGlobalPhones(stripped, html);
+  } catch (e) {
+    return [];
+  }
+}
+
+async function scrapeBing(query) {
+  const url = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+  const ua = ROTATING_USER_AGENTS[Math.floor(Math.random() * ROTATING_USER_AGENTS.length)];
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(10000),
+      headers: {
+        'User-Agent': ua,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      }
+    });
+    if (!res.ok) return [];
+    const html = await res.text();
+    const stripped = html.replace(/<[^>]+>/g, ' ');
+    return extractGlobalPhones(stripped, html);
+  } catch (e) {
+    return [];
+  }
 }
 
 async function scrapeYandex(query) {
@@ -628,7 +674,15 @@ async function triggerFreeWebScraper(options = {}) {
   for (const query of territory.queries) {
     if (extracted.length >= minLeads) break;
 
-    const results = await scrapeYandex(query);
+    // Multi-Engine Waterfall: DuckDuckGo -> Bing -> Yandex
+    let results = await scrapeDuckDuckGo(query);
+    if (!results || results.length === 0) {
+      results = await scrapeBing(query);
+    }
+    if (!results || results.length === 0) {
+      results = await scrapeYandex(query);
+    }
+
     for (const r of results) {
       if (!seenPhones.has(r.phone) && !isPhoneAlreadySent(r.phone)) {
         seenPhones.add(r.phone);
@@ -639,7 +693,7 @@ async function triggerFreeWebScraper(options = {}) {
           segment: territory.focus,
           location: 'Karnal',
           assignedAccount: targetAccount,
-          source: `yandex_${targetAccount}`,
+          source: `harvester_${targetAccount}`,
           query: query,
           isVerifiedWhatsApp: true
         });
