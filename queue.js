@@ -657,13 +657,24 @@ async function runMetaCloudWorker() {
       continue;
     }
 
-    // 6. Phone validation & Duplicate Shield
+    // 6. Strict WhatsApp Phone Validation & Duplicate Shield
     const digits = String(lead.phone).replace(/\D/g, '');
-    if (!digits || digits.length < 10) {
-      scraper.updateLeadStatus(lead.phone, 'invalid_number', null, 'meta_cloud');
+    let cleanPhone = digits;
+    if (digits.length === 10 && /^[6-9]/.test(digits)) {
+      cleanPhone = `91${digits}`;
+    } else if (digits.length === 11 && digits.startsWith('0') && /^[6-9]/.test(digits[1])) {
+      cleanPhone = `91${digits.slice(1)}`;
+    }
+
+    // Must strictly be valid Indian mobile (91 + [6-9] + 9 digits) or verified NRI mobile (UK/UAE/Aus)
+    const isValidIndianMobile = /^91[6-9]\d{9}$/.test(cleanPhone);
+    const isValidNriMobile = /^(?:447\d{9}|9715\d{8}|614\d{8})$/.test(cleanPhone);
+
+    if (!isValidIndianMobile && !isValidNriMobile) {
+      console.log(`⏩ [WhatsApp Guard] Skipped invalid/non-WhatsApp number +${cleanPhone}`);
+      scraper.updateLeadStatus(lead.phone, 'invalid_number', 'Not a valid WhatsApp mobile format', 'meta_cloud');
       continue;
     }
-    const cleanPhone = digits.length === 10 ? `91${digits}` : digits;
 
     if (scraper.isPhoneAlreadySent(cleanPhone) || scraper.isPhoneAlreadySent(digits)) {
       console.log(`⏩ [Duplicate Shield] +${cleanPhone} was already contacted. Skipping!`);

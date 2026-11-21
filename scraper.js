@@ -474,52 +474,69 @@ const ROTATING_USER_AGENTS = [
 ];
 
 /**
- * Extract Global Phone Numbers from Text (India, US/Canada, UK, Australia, UAE)
+ * Extract Verified WhatsApp & Global Mobile Numbers from Text & HTML
+ * Strictly eliminates fake/mangled numbers and prioritizes active WhatsApp formats
  */
-function extractGlobalPhones(text) {
+function extractGlobalPhones(text, html = '') {
   const results = [];
-  if (!text) return results;
+  const seen = new Set();
+  if (!text && !html) return results;
 
-  // 1. India (+91 or bare 10-digit)
-  const inMatches = text.match(/(?:\+?91[\s.-]*|0)?([6-9]\d{9})\b/g) || [];
-  for (const p of inMatches) {
-    const d = p.replace(/\D/g, '');
-    const clean = d.startsWith('91') && d.length === 12 ? d : (d.length === 10 ? '91' + d : (d.startsWith('0') && d.length === 11 ? '91' + d.slice(1) : null));
-    if (clean && clean.length === 12) results.push({ phone: clean, country: 'India' });
-  }
-
-  // 2. US / Canada (+1)
-  const usMatches = text.match(/(?:\+?1[-.\s]?)?\(?([2-9]\d{2})\)?[-.\s]?([2-9]\d{2})[-.\s]?(\d{4})\b/g) || [];
-  for (const p of usMatches) {
-    const d = p.replace(/\D/g, '');
-    const clean = d.length === 10 ? '1' + d : d;
-    if (clean.length === 11 && clean.startsWith('1') && !isTollFree(clean)) {
-      results.push({ phone: clean, country: 'Canada/USA' });
+  // 1. Direct WhatsApp Click-to-Chat links from raw HTML (100% verified WhatsApp users)
+  if (html) {
+    const waMatches = html.match(/(?:wa\.me\/(?:\+?91)?|api\.whatsapp\.com\/send\?phone=(?:\+?91)?)([6-9]\d{9})/gi) || [];
+    for (const m of waMatches) {
+      const d = m.replace(/\D/g, '').slice(-10);
+      const clean = `91${d}`;
+      if (!seen.has(clean) && /^91[6-9]\d{9}$/.test(clean)) {
+        seen.add(clean);
+        results.push({ phone: clean, country: 'India', isVerifiedWhatsApp: true });
+      }
     }
   }
 
-  // 3. UK (+44)
-  const ukMatches = text.match(/(?:\+?44[-.\s]?|0)7\d{3}[-.\s]?\d{6}\b/g) || [];
+  // 2. India Mobile (+91, 0, or bare 10-digit strictly starting with 6, 7, 8, or 9)
+  const inMatches = (text || '').match(/(?:\+?91[\s.-]*|0)?([6-9]\d{9})\b/g) || [];
+  for (const p of inMatches) {
+    const d = p.replace(/\D/g, '').slice(-10);
+    const clean = `91${d}`;
+    if (!seen.has(clean) && /^91[6-9]\d{9}$/.test(clean)) {
+      seen.add(clean);
+      results.push({ phone: clean, country: 'India' });
+    }
+  }
+
+  // 3. UK (+44 mobile strictly starting with 7, exactly 10 digits after 44)
+  const ukMatches = (text || '').match(/(?:\+44[\s.-]?|\b0)7\d{3}[\s.-]?\d{6}\b/g) || [];
   for (const p of ukMatches) {
     const d = p.replace(/\D/g, '');
     const clean = d.startsWith('0') ? '44' + d.slice(1) : (d.startsWith('44') ? d : '44' + d);
-    results.push({ phone: clean, country: 'UK' });
+    if (clean.length === 12 && /^447\d{9}$/.test(clean) && !seen.has(clean)) {
+      seen.add(clean);
+      results.push({ phone: clean, country: 'UK' });
+    }
   }
 
-  // 4. Australia (+61)
-  const auMatches = text.match(/(?:\+?61[-.\s]?|0)4\d{2}[-.\s]?\d{3}[-.\s]?\d{3}\b/g) || [];
-  for (const p of auMatches) {
-    const d = p.replace(/\D/g, '');
-    const clean = d.startsWith('0') ? '61' + d.slice(1) : (d.startsWith('61') ? d : '61' + d);
-    results.push({ phone: clean, country: 'Australia' });
-  }
-
-  // 5. UAE (+971)
-  const uaeMatches = text.match(/(?:\+?971[\s.-]?|0)5\d{1}[-.\s]?\d{7}\b/g) || [];
+  // 4. UAE (+971 mobile strictly starting with 5, exactly 9 digits after 971)
+  const uaeMatches = (text || '').match(/(?:\+971[\s.-]?|\b0)5\d{1}[\s.-]?\d{7}\b/g) || [];
   for (const p of uaeMatches) {
     const d = p.replace(/\D/g, '');
     const clean = d.startsWith('0') ? '971' + d.slice(1) : (d.startsWith('971') ? d : '971' + d);
-    results.push({ phone: clean, country: 'UAE' });
+    if (clean.length === 12 && /^9715\d{8}$/.test(clean) && !seen.has(clean)) {
+      seen.add(clean);
+      results.push({ phone: clean, country: 'UAE' });
+    }
+  }
+
+  // 5. Australia (+61 mobile strictly starting with 4, exactly 9 digits after 61)
+  const auMatches = (text || '').match(/(?:\+61[\s.-]?|\b0)4\d{2}[\s.-]?\d{3}[\s.-]?\d{3}\b/g) || [];
+  for (const p of auMatches) {
+    const d = p.replace(/\D/g, '');
+    const clean = d.startsWith('0') ? '61' + d.slice(1) : (d.startsWith('61') ? d : '61' + d);
+    if (clean.length === 11 && /^614\d{8}$/.test(clean) && !seen.has(clean)) {
+      seen.add(clean);
+      results.push({ phone: clean, country: 'Australia' });
+    }
   }
 
   return results;
@@ -540,7 +557,7 @@ async function scrapeYandex(query) {
     const html = await res.text();
     if (html.includes('captcha') && html.length < 10000) return [];
     const stripped = html.replace(/<[^>]+>/g, ' ');
-    return extractGlobalPhones(stripped);
+    return extractGlobalPhones(stripped, html);
   } catch (e) {
     return [];
   }
